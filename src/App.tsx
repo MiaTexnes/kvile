@@ -30,6 +30,12 @@ const VenueDetailPage = lazy(() =>
   })),
 )
 
+const RegisterPage = lazy(() =>
+  import("./pages/RegisterPage").then((m) => ({
+    default: m.RegisterPage,
+  })),
+)
+
 const routeFallback = (
   <p role="status" aria-live="polite" className="text-brand-800">
     Loading…
@@ -45,6 +51,7 @@ export default function App() {
           <Route path="venues" element={<VenuesPage />} />
           <Route path="venues/:id" element={<VenueDetailPage />} />
           <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
           <Route
             element={
               <Suspense fallback={routeFallback}>
