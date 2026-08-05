@@ -1,4 +1,4 @@
-import type { ApiListResponse, Venue } from "./types"
+import type { ApiListResponse, ApiResponse, Venue } from "./types"
 import { venueMatchesCatalogQuery } from "./filterVenues"
 
 const envBase = import.meta.env.VITE_API_BASE_URL as string | undefined
@@ -149,4 +149,18 @@ export async function fetchVenuesSearchPage(
     data: [...search.data, ...extras],
     meta: search.meta ?? {},
   }
+}
+
+export async function fetchVenue(
+  id: string,
+  opts?: { bookings?: boolean; owner?: boolean; customer?: boolean },
+): Promise<Venue> {
+  const params = new URLSearchParams()
+  if (opts?.bookings) params.set("_bookings", "true")
+  if (opts?.owner) params.set("_owner", "true")
+  if (opts?.customer) params.set("_customer", "true")
+  const qs = params.toString()
+  const path = qs ? `/holidaze/venues/${id}?${qs}` : `/holidaze/venues/${id}`
+  const json = await holidazeFetch<ApiResponse<Venue>>(path)
+  return json.data
 }
