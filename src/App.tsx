@@ -1,122 +1,90 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { lazy, Suspense } from "react"
+import { Route, Routes } from "react-router-dom"
+import { Layout } from "./components/Layout"
+import { HomePage } from "./pages/HomePage"
+import { VenuesPage } from "./pages/VenuesPage"
 
-function App() {
-  const [count, setCount] = useState(0)
+const LoginPage = lazy(() =>
+  import("./pages/LoginPage").then((m) => ({ default: m.LoginPage })),
+)
 
+const MyBookingsPage = lazy(() =>
+  import("./pages/MyBookingsPage").then((m) => ({
+    default: m.MyBookingsPage,
+  })),
+)
+
+const NotFoundPage = lazy(() =>
+  import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })),
+)
+
+const ProtectedRoute = lazy(() =>
+  import("./components/ProtectedRoute").then((m) => ({
+    default: m.ProtectedRoute,
+  })),
+)
+
+const ManagerRoute = lazy(() =>
+  import("./components/ManagerRoute").then((m) => ({
+    default: m.ManagerRoute,
+  })),
+)
+
+const VenueDetailPage = lazy(() =>
+  import("./pages/VenueDetailPage").then((m) => ({
+    default: m.VenueDetailPage,
+  })),
+)
+
+const RegisterPage = lazy(() =>
+  import("./pages/RegisterPage").then((m) => ({
+    default: m.RegisterPage,
+  })),
+)
+
+const ManagerVenuesPage = lazy(() =>
+  import("./pages/Manager/ManagerVenuesPage").then((m) => ({
+    default: m.ManagerVenuesPage,
+  })),
+)
+
+const routeFallback = (
+  <p role="status" aria-live="polite" className="text-brand-800">
+    Loading…
+  </p>
+)
+
+export default function App() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <Suspense fallback={routeFallback}>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route path="venues" element={<VenuesPage />} />
+          <Route path="venues/:id" element={<VenueDetailPage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route
+            element={
+              <Suspense fallback={routeFallback}>
+                <ProtectedRoute />
+              </Suspense>
+            }
+          >
+            <Route path="my-bookings" element={<MyBookingsPage />} />
+          </Route>
+          <Route
+            element={
+              <Suspense fallback={routeFallback}>
+                <ManagerRoute />
+              </Suspense>
+            }
+          >
+            <Route path="manager/venues" element={<ManagerVenuesPage />} />
+          </Route>
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      </Routes>
+    </Suspense>
   )
 }
-
-export default App

@@ -1,0 +1,237 @@
+import type {
+  ApiListResponse,
+  ApiResponse,
+  HolidazeProfile,
+  LoginResponseData,
+  RegisterRequestBody,
+  Venue,
+} from "./types"
+import { venueMatchesCatalogQuery } from "./filterVenues"
+
+const envBase = import.meta.env.VITE_API_BASE_URL as string | undefined
+const noroffApiKey = (
+  import.meta.env.VITE_NOROFF_API_KEY as string | undefined
+)?.trim()
+
+export const API_BASE_URL = (envBase ?? "https://v2.api.noroff.dev").replace(
+  /\/$/,
+  "",
+)
+
+function holidazeProfileSlugCandidates(profileName: string): string[] {
+  const t = profileName.trim()
+  const lower = encodeURIComponent(t.toLowerCase())
+  const raw = encodeURIComponent(t)
+  return lower === raw ? [lower] : [raw, lower]
+}
+
+let unauthorizedHandler: (() => void) | null = null
+
+export function setUnauthorizedHandler(fn: (() => void) | null) {
+  unauthorizedHandler = fn
+}
+
+async function parseErrorMessage(res: Response): Promise<string> {
+  try {
+    const body = (await res.json()) as {
+      errors?: Array<{ message?: string } | string> | { message?: string }
+      message?: string
+    }
+    if (body.errors) {
+      if (Array.isArray(body.errors) && body.errors.length) {
+        const msgs = body.errors
+          .map((e) => (typeof e === "string" ? e : e?.message))
+          .filter((m): m is string => Boolean(m && m.trim()))
+        if (msgs.length) return msgs.join("; ")
+      }
+      if (!Array.isArray(body.errors) && typeof body.errors === "object") {
+        const m = (body.errors as { message?: string }).message
+        if (m) return m
+      }
+    }
+    if (body.message) return body.message
+  } catch {
+    /* ignore */
+  }
+  return res.statusText || `Request failed (${res.status})`
+}
+
+export async function holidazeFetch<T>(
+  path: string,
+  options: RequestInit & {
+    token?: string | null
+    endSessionOn401?: boolean
+  } = {},
+): Promise<T> {
+  const {
+    token,
+    headers: optHeaders,
+    endSessionOn401 = true,
+    ...rest
+  } = options
+  const headers = new Headers(optHeaders)
+  if (
+    !headers.has("Content-Type") &&
+    rest.body &&
+    !(rest.body instanceof FormData)
+  ) {
+    headers.set("Content-Type", "application/json")
+  }
+  const bearer = token?.trim()
+  if (bearer && !noroffApiKey) {
+    throw new Error(
+      "Missing VITE_NOROFF_API_KEY. Noroff requires X-Noroff-API-Key on requests that send a Bearer token. Add your app key to .env (copy from .env.example), then restart the dev server. On Netlify, add the same variable under Site settings > Environment.",
+    )
+  }
+  if (bearer) headers.set("Authorization", `Bearer ${bearer}`)
+  if (noroffApiKey) headers.set("X-Noroff-API-Key", noroffApiKey)
+
+  const res = await fetch(`${API_BASE_URL}${path}`, { ...rest, headers })
+
+  if (res.status === 401 && bearer && endSessionOn401) {
+    unauthorizedHandler?.()
+  }
+
+  if (res.status === 204) {
+    return undefined as T
+  }
+
+  if (!res.ok) {
+    throw new Error(await parseErrorMessage(res))
+  }
+
+  try {
+    return (await res.json()) as T
+  } catch {
+    throw new Error(`Response was not valid JSON (${res.status}).`)
+  }
+}
+
+export async function registerUser(
+  body: RegisterRequestBody,
+): Promise<HolidazeProfile> {
+  const json = await holidazeFetch<ApiResponse<HolidazeProfile>>(
+    "/auth/register",
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    },
+  )
+  return json.data
+}
+
+export async function loginUser(
+  email: string,
+  password: string,
+): Promise<LoginResponseData> {
+  const json = await holidazeFetch<ApiResponse<LoginResponseData>>(
+    "/auth/login?_holidaze=true",
+    {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    },
+  )
+  return json.data
+}
+
+async function fetchHolidazeProfileResponse(
+  token: string,
+  profileName: string,
+  opts?: { endSessionOn401?: boolean },
+): Promise<ApiResponse<HolidazeProfile>> {
+  const endSessionOn401 = opts?.endSessionOn401 ?? true
+  let last: Error | undefined
+  for (const slug of holidazeProfileSlugCandidates(profileName)) {
+    try {
+      return await holidazeFetch<ApiResponse<HolidazeProfile>>(
+        `/holidaze/profiles/${slug}?_bookings=true`,
+        { token, endSessionOn401 },
+      )
+    } catch (e) {
+      last = e instanceof Error ? e : new Error(String(e))
+    }
+  }
+  throw last ?? new Error("Profile request failed")
+}
+
+export async function fetchProfile(
+  token: string,
+  profileName: string,
+): Promise<HolidazeProfile> {
+  const json = await fetchHolidazeProfileResponse(token, profileName, {
+    endSessionOn401: false,
+  })
+  return json.data
+}
+
+export async function fetchVenuesPage(
+  page = 1,
+  limit = 20,
+  opts?: { sort?: string; sortOrder?: string },
+): Promise<ApiListResponse<Venue>> {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    page: String(page),
+  })
+  if (opts?.sort) params.set("sort", opts.sort)
+  if (opts?.sortOrder) params.set("sortOrder", opts.sortOrder)
+  params.set("_owner", "true")
+  return holidazeFetch<ApiListResponse<Venue>>(`/holidaze/venues?${params}`)
+}
+
+/**
+ * Server search plus, on page 1, venues from the main catalogue that match `q` client-side.
+ * Noroff search can lag behind `/holidaze/venues`; new listings still show when you search by name/place.
+ */
+export async function fetchVenuesSearchPage(
+  q: string,
+  page = 1,
+  limit = 24,
+  listOpts?: { sort?: string; sortOrder?: string },
+): Promise<ApiListResponse<Venue>> {
+  const trimmed = q.trim()
+  const params = new URLSearchParams({
+    q: trimmed,
+    limit: String(limit),
+    page: String(page),
+  })
+  if (listOpts?.sort) params.set("sort", listOpts.sort)
+  if (listOpts?.sortOrder) params.set("sortOrder", listOpts.sortOrder)
+  params.set("_owner", "true")
+
+  if (!trimmed || page !== 1) {
+    return holidazeFetch<ApiListResponse<Venue>>(
+      `/holidaze/venues/search?${params}`,
+    )
+  }
+
+  const searchPath = `/holidaze/venues/search?${params}`
+  const [search, browse1, browse2] = await Promise.all([
+    holidazeFetch<ApiListResponse<Venue>>(searchPath),
+    fetchVenuesPage(1, 96, listOpts),
+    fetchVenuesPage(2, 96, listOpts),
+  ])
+  const fromBrowse = [...browse1.data, ...browse2.data]
+  const inSearch = new Set(search.data.map((v) => v.id))
+  const extras = fromBrowse.filter(
+    (v) => !inSearch.has(v.id) && venueMatchesCatalogQuery(v, trimmed),
+  )
+  return {
+    data: [...search.data, ...extras],
+    meta: search.meta ?? {},
+  }
+}
+
+export async function fetchVenue(
+  id: string,
+  opts?: { bookings?: boolean; owner?: boolean; customer?: boolean },
+): Promise<Venue> {
+  const params = new URLSearchParams()
+  if (opts?.bookings) params.set("_bookings", "true")
+  if (opts?.owner) params.set("_owner", "true")
+  if (opts?.customer) params.set("_customer", "true")
+  const qs = params.toString()
+  const path = qs ? `/holidaze/venues/${id}?${qs}` : `/holidaze/venues/${id}`
+  const json = await holidazeFetch<ApiResponse<Venue>>(path)
+  return json.data
+}

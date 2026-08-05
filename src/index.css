@@ -1,116 +1,131 @@
 @import "tailwindcss";
 @import "react-day-picker/style.css";
+
 @theme {
-  /* todo */
-}
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-manrope: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-marketing-display: "Fraunces", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
-  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
-  --heading: system-ui, "Segoe UI", Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  --color-cream: #f5f4f1;
+  --color-mobile-surface: #f2f6f4;
+  --color-surface-sheet: #e7f0ec;
+  --color-mobile-ink: #1a2220;
+  --color-surface-container-high: #dce7e2;
+  --color-on-surface-muted: #4d5753;
+  --color-holidaze-ink: #141a18;
+  --color-holidaze-muted: #5c6560;
+  --color-holidaze-blue: #0f766e;
+  --color-holidaze-blue-hover: #0b5c56;
+  --color-mobile-primary: #127a6c;
+  --color-holidaze-gold: #b45309;
+  --color-accent-warm: #9a3412;
+  --color-badge-star-bg: #fde68a;
+  --color-badge-star-text: #7c2d12;
+  --color-brand-50: oklch(0.97 0.018 170);
+  --color-brand-100: oklch(0.93 0.038 168);
+  --color-brand-200: oklch(0.86 0.055 168);
+  --color-brand-500: oklch(0.52 0.11 168);
+  --color-brand-600: oklch(0.45 0.1 168);
+  --color-brand-700: oklch(0.38 0.09 168);
+  --color-brand-800: oklch(0.31 0.075 168);
+  --color-brand-950: oklch(0.21 0.045 168);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
+  min-height: 100svh;
+  font-family: var(--font-manrope);
+  color: var(--color-mobile-ink);
+  background: var(--color-cream);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+#root {
+  min-height: 100svh;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+.app-page-bg {
+  background-color: var(--color-cream);
+}
+
+/* Visually hidden until keyboard focus */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  border-radius: 9999px;
+  background: var(--color-mobile-primary);
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform 0.15s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 2px solid var(--color-holidaze-ink);
+  outline-offset: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-holidaze-blue);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
+
+.rdp-root {
+  --rdp-accent-color: var(--color-holidaze-blue);
+  --rdp-accent-background-color: var(--color-brand-100);
+  --rdp-range_middle-background-color: color-mix(in oklch, var(--color-brand-100), white);
+}
+
+.rdp-root .rdp-day.holidaze-day-booked.rdp-disabled:not(.rdp-selected),
+.rdp-root .day.holidaze-day-booked.disabled:not(.selected) {
+  opacity: 1;
+}
+.rdp-root .rdp-day.holidaze-day-booked .rdp-day_button:disabled,
+.rdp-root .day.holidaze-day-booked .day_button:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+  border: 1px solid color-mix(in oklch, #ef4444 40%, transparent);
+  background-color: color-mix(in oklch, #fecaca 58%, white);
+  color: #000000;
+  font-weight: 600;
+}
+@media (prefers-contrast: more) {
+  .rdp-root .rdp-day.holidaze-day-booked .rdp-day_button:disabled,
+  .rdp-root .day.holidaze-day-booked .day_button:disabled {
+    border-width: 2px;
+    border-color: #dc2626;
+    background-color: #ffe4e6;
+    color: #451a1a;
   }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
 }
