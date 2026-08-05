@@ -242,8 +242,8 @@ export function VenueDetailPage() {
   const { id } = useParams<{ id: string }>()
 
   const venueQuery = useQuery({
-    queryKey: ["venue", id],
-    queryFn: () => fetchVenue(id!, { owner: true }),
+    queryKey: ["venue", id, "bookings"],
+    queryFn: () => fetchVenue(id!, { bookings: true, owner: true }),
     enabled: Boolean(id),
   })
 
