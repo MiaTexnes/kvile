@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react"
 import { Route, Routes } from "react-router-dom"
 import { Layout } from "./components/Layout"
+import { HomePage } from "./pages/HomePage"
 import { VenuesPage } from "./pages/VenuesPage"
 
 const NotFoundPage = lazy(() =>
@@ -18,8 +19,8 @@ export default function App() {
     <Suspense fallback={routeFallback}>
       <Routes>
         <Route path="/" element={<Layout />}>
-          {/* nested pages go here as you build them */}
-          <Route path="/venues" element={<VenuesPage />} />
+          <Route index element={<HomePage />} />
+          <Route path="venues" element={<VenuesPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
