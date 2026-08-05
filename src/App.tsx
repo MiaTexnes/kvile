@@ -4,6 +4,10 @@ import { Layout } from "./components/Layout"
 import { HomePage } from "./pages/HomePage"
 import { VenuesPage } from "./pages/VenuesPage"
 
+const LoginPage = lazy(() =>
+  import("./pages/LoginPage").then((m) => ({ default: m.LoginPage })),
+)
+
 const NotFoundPage = lazy(() =>
   import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })),
 )
@@ -28,6 +32,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="venues" element={<VenuesPage />} />
           <Route path="venues/:id" element={<VenueDetailPage />} />
+          <Route path="login" element={<LoginPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
