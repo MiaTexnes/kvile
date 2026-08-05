@@ -41,16 +41,30 @@ export function VenuesPage() {
             No venues to show right now.
           </p>
         ) : (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {catalog.gridVenues.map((v) => (
-              <CuratedVenueCard
-                key={v.id}
-                venue={v}
-                favorited={Boolean(catalog.favorites[v.id])}
-                onToggleFav={catalog.toggleFavorite}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+              {catalog.gridVenues.map((v) => (
+                <CuratedVenueCard
+                  key={v.id}
+                  venue={v}
+                  favorited={Boolean(catalog.favorites[v.id])}
+                  onToggleFav={catalog.toggleFavorite}
+                />
+              ))}
+            </div>
+            {catalog.canLoadMore ? (
+              <div className="mt-12 flex justify-center">
+                <button
+                  type="button"
+                  disabled={catalog.isFetchingNextPage}
+                  onClick={() => catalog.fetchNextPage()}
+                  className="rounded-full border border-stone-300 bg-white px-8 py-3 text-sm font-semibold text-mobile-ink shadow-sm transition hover:bg-stone-50 disabled:opacity-50"
+                >
+                  {catalog.isFetchingNextPage ? "Loading..." : "Load more"}
+                </button>
+              </div>
+            ) : null}
+          </>
         )}
       </div>
     </div>

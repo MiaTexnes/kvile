@@ -27,6 +27,10 @@ export function useVenueCatalog() {
     [listQuery.data],
   )
 
+  function fetchNextPage() {
+    void listQuery.fetchNextPage()
+  }
+
   return {
     gridVenues,
     loading: listQuery.isLoading,
@@ -35,6 +39,6 @@ export function useVenueCatalog() {
     toggleFavorite,
     canLoadMore: listQuery.hasNextPage,
     isFetchingNextPage: listQuery.isFetchingNextPage,
-    fetchNextPage: () => void listQuery.fetchNextPage(),
+    fetchNextPage,
   }
 }
