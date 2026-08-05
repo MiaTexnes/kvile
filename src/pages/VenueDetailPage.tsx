@@ -1,10 +1,15 @@
+import { zodResolver } from "@hookform/resolvers/zod"
 import { format } from "date-fns"
+import { startOfToday } from "date-fns"
 import { useEffect, useMemo, useState } from "react"
+import { useForm } from "react-hook-form"
 import { useQuery } from "@tanstack/react-query"
 import { DayPicker, type DateRange } from "react-day-picker"
 import { Link, useParams } from "react-router-dom"
+import { z } from "zod"
 import { Alert } from "../components/Alert"
 import { CalendarBookedLegend } from "../components/CalendarBookedLegend"
+import { useAuth } from "../context/AuthContext"
 import { fetchVenue } from "../lib/api"
 import {
   isDateBlocked,
@@ -14,7 +19,15 @@ import {
 import { hostProfileHref } from "../lib/hostProfilePath"
 import type { Booking, Venue } from "../lib/types"
 import { useDocumentTitle } from "../lib/useDocumentTitle"
-import { startOfToday } from "date-fns"
+
+const bookingSchema = z.object({
+  guests: z
+    .number({ error: "Guests required" })
+    .int("Guests must be a whole number")
+    .min(1, "At least 1 guest"),
+})
+
+type BookingFormValues = z.infer<typeof bookingSchema>
 
 function VenuePhotoFallback({ label }: { label: string }) {
   return (
@@ -29,15 +42,25 @@ function VenuePhotoFallback({ label }: { label: string }) {
 }
 
 function VenueDetailBody({ venue }: { venue: Venue }) {
+  const { user } = useAuth()
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [brokenImageUrl, setBrokenImageUrl] = useState<string | null>(null)
   const [range, setRange] = useState<DateRange | undefined>(undefined)
   const [dateWarning, setDateWarning] = useState<string | null>(null)
+  const [bookingMessage, setBookingMessage] = useState<string | null>(null)
   const [showTwoMonths, setShowTwoMonths] = useState(
     () =>
       typeof window !== "undefined" &&
       window.matchMedia("(min-width: 900px)").matches,
   )
+
+  const form = useForm<BookingFormValues>({
+    resolver: zodResolver(bookingSchema),
+    defaultValues: { guests: 2 },
+    mode: "onChange",
+  })
+  const guestsReg = form.register("guests", { valueAsNumber: true })
+  const { errors, isValid } = form.formState
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 900px)")
@@ -66,6 +89,7 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
 
   function handleRangeSelect(next: DateRange | undefined) {
     setRange(next)
+    setBookingMessage(null)
     if (
       next?.from &&
       next?.to &&
@@ -75,6 +99,34 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
     } else {
       setDateWarning(null)
     }
+  }
+
+  const maxGuests = venue.maxGuests ?? 0
+  const hasCompleteRange = Boolean(range?.from && range?.to)
+  const canSubmit =
+    Boolean(user) &&
+    hasCompleteRange &&
+    isValid &&
+    !dateWarning &&
+    !form.formState.isSubmitting
+
+  function onSubmit(values: BookingFormValues) {
+    setBookingMessage(null)
+    if (!range?.from || !range.to) {
+      setBookingMessage("Please select a check-in and check-out range.")
+      return
+    }
+    if (values.guests > maxGuests) {
+      setBookingMessage(`This venue allows at most ${maxGuests} guests.`)
+      return
+    }
+    if (rangeOverlapsBooking(range.from, range.to, bookings)) {
+      setBookingMessage("Those dates overlap an existing booking.")
+      return
+    }
+    setBookingMessage(
+      "Dates and guest count are valid. API booking is wired in Task 27.",
+    )
   }
 
   const images = venue.media ?? []
@@ -91,8 +143,6 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
     venue.location?.country,
   ].filter(Boolean)
   const locationLine = locParts.join(", ")
-
-  const hasCompleteRange = Boolean(range?.from && range?.to)
 
   return (
     <div className="font-manrope mx-auto max-w-5xl space-y-10 px-4 pb-16 text-stone-700 md:px-0">
@@ -348,6 +398,73 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
               </p>
             ) : null}
             {dateWarning ? <Alert tone="warning">{dateWarning}</Alert> : null}
+
+            {user ? (
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4 border-t border-stone-200/80 pt-4"
+                noValidate
+              >
+                <div>
+                  <label
+                    htmlFor="booking-guests"
+                    className="text-xs font-semibold uppercase tracking-wide text-on-surface-muted"
+                  >
+                    Guests
+                  </label>
+                  <input
+                    id="booking-guests"
+                    type="number"
+                    min={1}
+                    max={maxGuests || undefined}
+                    required
+                    aria-invalid={Boolean(errors.guests) || undefined}
+                    aria-describedby={
+                      errors.guests
+                        ? "booking-guests-error"
+                        : "booking-guests-hint"
+                    }
+                    className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-mobile-ink outline-none transition focus:border-mobile-primary focus:ring-2 focus:ring-mobile-primary/30 aria-[invalid=true]:border-red-500"
+                    {...guestsReg}
+                  />
+                  <p
+                    id="booking-guests-hint"
+                    className="mt-1 text-xs text-on-surface-muted"
+                  >
+                    Up to {maxGuests} guest{maxGuests === 1 ? "" : "s"} for this
+                    stay.
+                  </p>
+                  {errors.guests ? (
+                    <p
+                      id="booking-guests-error"
+                      className="mt-1 text-sm text-red-700"
+                      role="alert"
+                    >
+                      {errors.guests.message}
+                    </p>
+                  ) : null}
+                </div>
+                <button
+                  type="submit"
+                  disabled={!canSubmit}
+                  aria-disabled={!canSubmit}
+                  className="w-full rounded-full bg-mobile-primary py-3.5 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {hasCompleteRange
+                    ? "Review booking details"
+                    : "Pick dates to continue"}
+                </button>
+              </form>
+            ) : (
+              <Alert tone="info">
+                You need to sign in before you can submit a booking for this
+                stay.
+              </Alert>
+            )}
+
+            {bookingMessage ? (
+              <Alert tone="warning">{bookingMessage}</Alert>
+            ) : null}
           </div>
         </div>
       </section>
