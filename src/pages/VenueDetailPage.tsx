@@ -1,8 +1,242 @@
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Link, useParams } from "react-router-dom"
 import { Alert } from "../components/Alert"
 import { fetchVenue } from "../lib/api"
+import { hostProfileHref } from "../lib/hostProfilePath"
+import type { Venue } from "../lib/types"
 import { useDocumentTitle } from "../lib/useDocumentTitle"
+
+function VenuePhotoFallback({ label }: { label: string }) {
+  return (
+    <div
+      className="flex h-full min-h-[12rem] items-center justify-center bg-gradient-to-br from-brand-100 to-brand-200 px-6 text-center font-medium text-brand-800/80"
+      role="img"
+      aria-label={label}
+    >
+      No image available
+    </div>
+  )
+}
+
+function VenueDetailBody({ venue }: { venue: Venue }) {
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const [brokenImageUrl, setBrokenImageUrl] = useState<string | null>(null)
+
+  const images = venue.media ?? []
+  const safeImageIndex = images.length
+    ? Math.min(activeImageIndex, images.length - 1)
+    : 0
+  const activeImg = images[safeImageIndex]
+  const showMainImage = activeImg && activeImg.url !== brokenImageUrl
+
+  const description = venue.description?.trim()
+  const locParts = [
+    venue.location?.address,
+    venue.location?.city,
+    venue.location?.country,
+  ].filter(Boolean)
+  const locationLine = locParts.join(", ")
+
+  return (
+    <div className="font-manrope mx-auto max-w-5xl space-y-10 px-4 pb-16 text-stone-700 md:px-0">
+      <div className="overflow-hidden rounded-[2rem] border border-stone-200/90 bg-white shadow-sm">
+        <div className="grid gap-0 lg:grid-cols-2">
+          <div className="flex flex-col bg-brand-100 lg:min-h-[380px]">
+            <div className="aspect-[4/3] w-full lg:aspect-auto lg:min-h-[280px] lg:flex-1">
+              {showMainImage ? (
+                <img
+                  src={activeImg.url}
+                  alt={activeImg.alt?.trim() || venue.name}
+                  className="h-full w-full object-cover"
+                  onError={() => setBrokenImageUrl(activeImg.url)}
+                />
+              ) : (
+                <VenuePhotoFallback
+                  label={
+                    activeImg && activeImg.url === brokenImageUrl
+                      ? `Photo for ${venue.name} could not be loaded`
+                      : `No photo for ${venue.name}`
+                  }
+                />
+              )}
+            </div>
+            {images.length > 1 ? (
+              <ul
+                className="flex gap-2 overflow-x-auto bg-white/85 p-3"
+                aria-label={`Venue photos, ${images.length} images`}
+              >
+                {images.map((media, index) => {
+                  const isActive = index === safeImageIndex
+                  return (
+                    <li key={`${media.url}-${index}`} className="shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setActiveImageIndex(index)}
+                        aria-label={`Show photo ${index + 1} of ${images.length}`}
+                        aria-current={isActive ? "true" : undefined}
+                        className={`h-16 w-20 overflow-hidden rounded-lg border-2 transition ${
+                          isActive
+                            ? "border-mobile-primary ring-2 ring-mobile-primary/30"
+                            : "border-transparent opacity-80 hover:opacity-100"
+                        }`}
+                      >
+                        <img
+                          src={media.url}
+                          alt=""
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : null}
+          </div>
+
+          <div className="flex flex-col gap-5 p-6 lg:p-10">
+            <div>
+              <p className="text-sm font-semibold text-mobile-primary">
+                <Link to="/venues" className="hover:underline">
+                  ← Back to all stays
+                </Link>
+              </p>
+              <h1 className="font-display mt-3 text-3xl font-semibold tracking-tight text-brand-950 md:text-4xl">
+                {venue.name}
+              </h1>
+              <p className="mt-4 text-base leading-relaxed text-on-surface-muted">
+                {description || "No description provided for this stay."}
+              </p>
+            </div>
+
+            <dl className="grid grid-cols-2 gap-3 text-sm md:max-w-md">
+              <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-on-surface-muted">
+                  Price
+                </dt>
+                <dd className="mt-1 text-lg font-semibold tabular-nums text-mobile-ink">
+                  {venue.price}
+                  <span className="text-sm font-medium text-on-surface-muted">
+                    {" "}
+                    / night
+                  </span>
+                </dd>
+              </div>
+              <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-on-surface-muted">
+                  Max guests
+                </dt>
+                <dd className="mt-1 text-lg font-semibold text-mobile-ink">
+                  {venue.maxGuests}
+                </dd>
+              </div>
+              {venue.rating != null ? (
+                <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-on-surface-muted">
+                    Rating
+                  </dt>
+                  <dd className="mt-1 text-lg font-semibold tabular-nums text-mobile-ink">
+                    {venue.rating}
+                  </dd>
+                </div>
+              ) : null}
+            </dl>
+
+            {venue.meta ? (
+              <ul className="flex flex-wrap gap-2 text-xs font-semibold text-mobile-ink">
+                {venue.meta.wifi ? (
+                  <li className="rounded-full bg-brand-100 px-3 py-1.5">
+                    Wi‑Fi
+                  </li>
+                ) : null}
+                {venue.meta.parking ? (
+                  <li className="rounded-full bg-brand-100 px-3 py-1.5">
+                    Parking
+                  </li>
+                ) : null}
+                {venue.meta.breakfast ? (
+                  <li className="rounded-full bg-brand-100 px-3 py-1.5">
+                    Breakfast
+                  </li>
+                ) : null}
+                {venue.meta.pets ? (
+                  <li className="rounded-full bg-brand-100 px-3 py-1.5">
+                    Pets allowed
+                  </li>
+                ) : null}
+              </ul>
+            ) : null}
+
+            {locationLine ? (
+              <p className="text-sm font-medium text-on-surface-muted">
+                <span className="font-semibold text-mobile-ink">
+                  Location ·{" "}
+                </span>
+                {locationLine}
+              </p>
+            ) : null}
+
+            {venue.owner ? (
+              <div className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50/80 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-on-surface-muted">
+                  Host
+                </p>
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <dt className="text-xs font-medium text-on-surface-muted">
+                      Name
+                    </dt>
+                    <dd className="mt-1 font-medium text-mobile-ink">
+                      <Link
+                        to={hostProfileHref(venue.owner.name)}
+                        className="text-mobile-primary underline-offset-4 hover:underline"
+                      >
+                        {venue.owner.name}
+                      </Link>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-medium text-on-surface-muted">
+                      Email
+                    </dt>
+                    <dd className="mt-1 break-all">
+                      <a
+                        href={`mailto:${venue.owner.email}`}
+                        className="font-medium text-mobile-primary underline-offset-4 hover:underline"
+                      >
+                        {venue.owner.email}
+                      </a>
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            ) : (
+              <p className="rounded-2xl border border-dashed border-stone-200 bg-stone-50/50 px-4 py-3 text-sm text-on-surface-muted">
+                Host contact details aren&apos;t available for this listing.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <section
+        aria-labelledby="venue-booking"
+        className="rounded-[2rem] border border-stone-200/90 bg-white p-6 shadow-sm lg:p-10"
+      >
+        <h2
+          id="venue-booking"
+          className="font-display text-2xl font-semibold text-brand-950"
+        >
+          Dates &amp; booking
+        </h2>
+        <p className="mt-3 text-sm text-on-surface-muted">
+          Calendar and booking will be added in a later task (Issues 24–28).
+        </p>
+      </section>
+    </div>
+  )
+}
 
 export function VenueDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -38,74 +272,5 @@ export function VenueDetailPage() {
     )
   }
 
-  const venue = venueQuery.data
-
-  return (
-    <article className="font-manrope mx-auto max-w-3xl space-y-8 px-4 pb-16 text-stone-700 md:px-0">
-      <p className="text-sm font-semibold text-mobile-primary">
-        <Link to="/venues" className="hover:underline">
-          ← Back to all stays
-        </Link>
-      </p>
-
-      <header>
-        <h1 className="font-display text-3xl font-semibold tracking-tight text-brand-950 md:text-4xl">
-          {venue.name}
-        </h1>
-      </header>
-
-      <section aria-labelledby="venue-about">
-        <h2 id="venue-about" className="text-xl font-bold text-mobile-ink">
-          About this stay
-        </h2>
-        <p className="mt-3 leading-relaxed text-on-surface-muted">
-          {venue.description?.trim()
-            ? venue.description
-            : "Description will appear here."}
-        </p>
-      </section>
-
-      <section aria-labelledby="venue-details">
-        <h2 id="venue-details" className="text-xl font-bold text-mobile-ink">
-          Details
-        </h2>
-        <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
-          <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
-            <dt className="text-xs font-semibold uppercase tracking-wide text-on-surface-muted">
-              Price per night
-            </dt>
-            <dd className="mt-1 text-lg font-semibold tabular-nums text-mobile-ink">
-              {venue.price}
-            </dd>
-          </div>
-          <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
-            <dt className="text-xs font-semibold uppercase tracking-wide text-on-surface-muted">
-              Max guests
-            </dt>
-            <dd className="mt-1 text-lg font-semibold text-mobile-ink">
-              {venue.maxGuests}
-            </dd>
-          </div>
-        </dl>
-      </section>
-
-      <section aria-labelledby="venue-photos">
-        <h2 id="venue-photos" className="text-xl font-bold text-mobile-ink">
-          Photos
-        </h2>
-        <p className="mt-3 text-sm text-on-surface-muted" role="status">
-          Photo gallery comes in the next venue page task.
-        </p>
-      </section>
-
-      <section aria-labelledby="venue-booking">
-        <h2 id="venue-booking" className="text-xl font-bold text-mobile-ink">
-          Dates &amp; booking
-        </h2>
-        <p className="mt-3 text-sm text-on-surface-muted">
-          Calendar and booking will be added in a later task.
-        </p>
-      </section>
-    </article>
-  )
+  return <VenueDetailBody key={venueQuery.data.id} venue={venueQuery.data} />
 }
