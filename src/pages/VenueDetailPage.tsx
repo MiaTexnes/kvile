@@ -1,11 +1,20 @@
-import { useState } from "react"
+import { format } from "date-fns"
+import { useEffect, useMemo, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { DayPicker, type DateRange } from "react-day-picker"
 import { Link, useParams } from "react-router-dom"
 import { Alert } from "../components/Alert"
+import { CalendarBookedLegend } from "../components/CalendarBookedLegend"
 import { fetchVenue } from "../lib/api"
+import {
+  isDateBlocked,
+  isUnavailableBookedNight,
+  rangeOverlapsBooking,
+} from "../lib/availability"
 import { hostProfileHref } from "../lib/hostProfilePath"
-import type { Venue } from "../lib/types"
+import type { Booking, Venue } from "../lib/types"
 import { useDocumentTitle } from "../lib/useDocumentTitle"
+import { startOfToday } from "date-fns"
 
 function VenuePhotoFallback({ label }: { label: string }) {
   return (
@@ -22,6 +31,51 @@ function VenuePhotoFallback({ label }: { label: string }) {
 function VenueDetailBody({ venue }: { venue: Venue }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [brokenImageUrl, setBrokenImageUrl] = useState<string | null>(null)
+  const [range, setRange] = useState<DateRange | undefined>(undefined)
+  const [dateWarning, setDateWarning] = useState<string | null>(null)
+  const [showTwoMonths, setShowTwoMonths] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 900px)").matches,
+  )
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 900px)")
+    const handleChange = (event: MediaQueryListEvent) =>
+      setShowTwoMonths(event.matches)
+    mql.addEventListener("change", handleChange)
+    return () => mql.removeEventListener("change", handleChange)
+  }, [])
+
+  const bookings: Booking[] = useMemo(
+    () => venue.bookings ?? [],
+    [venue.bookings],
+  )
+
+  const disabledDays = useMemo(
+    () => (day: Date) => isDateBlocked(day, bookings),
+    [bookings],
+  )
+
+  const bookedNightModifiers = useMemo(
+    () => ({
+      bookedUnavailable: (day: Date) => isUnavailableBookedNight(day, bookings),
+    }),
+    [bookings],
+  )
+
+  function handleRangeSelect(next: DateRange | undefined) {
+    setRange(next)
+    if (
+      next?.from &&
+      next?.to &&
+      rangeOverlapsBooking(next.from, next.to, bookings)
+    ) {
+      setDateWarning("Those dates overlap an existing booking.")
+    } else {
+      setDateWarning(null)
+    }
+  }
 
   const images = venue.media ?? []
   const safeImageIndex = images.length
@@ -37,6 +91,8 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
     venue.location?.country,
   ].filter(Boolean)
   const locationLine = locParts.join(", ")
+
+  const hasCompleteRange = Boolean(range?.from && range?.to)
 
   return (
     <div className="font-manrope mx-auto max-w-5xl space-y-10 px-4 pb-16 text-stone-700 md:px-0">
@@ -228,11 +284,72 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
           id="venue-booking"
           className="font-display text-2xl font-semibold text-brand-950"
         >
-          Dates &amp; booking
+          Pick your dates
         </h2>
-        <p className="mt-3 text-sm text-on-surface-muted">
-          Calendar and booking will be added in a later task (Issues 24–28).
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-on-surface-muted">
+          Nights that clash with existing bookings cannot be chosen. Use the{" "}
+          <span className="font-medium text-mobile-ink">Explanation</span> below
+          the calendar. Dates shaded{" "}
+          <strong className="font-medium text-red-900">
+            a light red highlight
+          </strong>{" "}
+          are unavailable because someone already reserved that stay from
+          check-in through check-out (<strong>inclusive</strong>). All dates use
+          your browser&apos;s local timezone.
         </p>
+
+        <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start">
+          <div className="flex flex-col gap-4">
+            <DayPicker
+              mode="range"
+              numberOfMonths={showTwoMonths ? 2 : 1}
+              selected={range}
+              onSelect={handleRangeSelect}
+              disabled={[{ before: startOfToday() }, disabledDays]}
+              modifiers={bookedNightModifiers}
+              modifiersClassNames={{
+                bookedUnavailable: "holidaze-day-booked",
+              }}
+              aria-label="Choose check-in and check-out dates"
+            />
+            <CalendarBookedLegend audience="guest" className="max-w-xl" />
+          </div>
+
+          <div
+            className="flex-1 space-y-4 rounded-2xl border border-dashed border-stone-200 bg-stone-50/50 p-5 md:p-6"
+            aria-live="polite"
+          >
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-on-surface-muted">
+              Selected stay
+            </h3>
+            {range?.from ? (
+              <p className="text-sm text-mobile-ink">
+                <span className="font-semibold">Check-in:</span>{" "}
+                {format(range.from, "PPP")}
+              </p>
+            ) : (
+              <p className="text-sm text-on-surface-muted">
+                Choose a check-in date on the calendar.
+              </p>
+            )}
+            {range?.to ? (
+              <p className="text-sm text-mobile-ink">
+                <span className="font-semibold">Check-out:</span>{" "}
+                {format(range.to, "PPP")}
+              </p>
+            ) : range?.from ? (
+              <p className="text-sm text-on-surface-muted">
+                Choose a check-out date to complete your range.
+              </p>
+            ) : null}
+            {hasCompleteRange && !dateWarning ? (
+              <p className="text-sm text-mobile-primary" role="status">
+                Your selected range does not overlap existing bookings.
+              </p>
+            ) : null}
+            {dateWarning ? <Alert tone="warning">{dateWarning}</Alert> : null}
+          </div>
+        </div>
       </section>
     </div>
   )

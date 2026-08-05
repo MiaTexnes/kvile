@@ -100,3 +100,32 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+.rdp-root {
+  --rdp-accent-color: var(--color-holidaze-blue);
+  --rdp-accent-background-color: var(--color-brand-100);
+  --rdp-range_middle-background-color: color-mix(in oklch, var(--color-brand-100), white);
+}
+
+.rdp-root .rdp-day.holidaze-day-booked.rdp-disabled:not(.rdp-selected),
+.rdp-root .day.holidaze-day-booked.disabled:not(.selected) {
+  opacity: 1;
+}
+.rdp-root .rdp-day.holidaze-day-booked .rdp-day_button:disabled,
+.rdp-root .day.holidaze-day-booked .day_button:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+  border: 1px solid color-mix(in oklch, #ef4444 40%, transparent);
+  background-color: color-mix(in oklch, #fecaca 58%, white);
+  color: #000000;
+  font-weight: 600;
+}
+@media (prefers-contrast: more) {
+  .rdp-root .rdp-day.holidaze-day-booked .rdp-day_button:disabled,
+  .rdp-root .day.holidaze-day-booked .day_button:disabled {
+    border-width: 2px;
+    border-color: #dc2626;
+    background-color: #ffe4e6;
+    color: #451a1a;
+  }
+}
