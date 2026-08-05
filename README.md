@@ -1,75 +1,25 @@
-# React + TypeScript + Vite
+# Kvile — exam front end
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Customer-facing **venue discovery, search, detail, and booking** plus **venue manager** tools to create, update, delete venues and inspect bookings. **Kvile** is the product name used in this repo; data comes from the **Noroff Holidaze API** (`v2.api.noroff.dev`).
 
-Currently, two official plugins are available:
+## Visual design
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The **home page** pairs **Fraunces** (marketing headline) with **Inter** / **Manrope** body type on a warm cream background (`#f5f4f1`) and a **botanical teal** brand (`--color-holidaze-blue: #0f766e`, primary action `#127a6c`) with a terracotta/clay accent. A full-bleed hero photo sits under a transparent header with the headline **“Find Your Place of Peace”** and a **pill search bar** (place / keywords / guests / pets — dates are chosen later on the venue page). Below it, a **Recommended stays** section opens pre-filtered to Top Rated (≥4.5) + WiFi + Parking, with **filter pills** (Top Rated · Breakfast · Pets · WiFi · Parking), a **sort select** (price / rating), **four-column** listing cards (heart, rating, location, teal price) on desktop and a stacked featured layout on mobile. Color tokens, hero gradients, and the day-picker theme live in [`src/index.css`](src/index.css). Inner pages reuse the same tokens via the `.app-page-bg` backdrop.
 
-## React Compiler
+## Stack (approved)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 19** + **TypeScript** + **Vite**
+- **Tailwind CSS v4**
+- **React Router v7**
+- **TanStack Query**, **React Hook Form**, **Zod**
+- **react-day-picker** for the availability calendar
 
-## Expanding the ESLint configuration
+## Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Node.js** 20+ recommended (18 LTS should work)
+- A **stud.noroff.no** email for registering test accounts (enforced in the register form to match the brief)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Setup
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+```bash
+npm install
