@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { DayPicker, type DateRange } from "react-day-picker"
-import { Link, useParams } from "react-router-dom"
+import { Link, useLocation, useParams } from "react-router-dom"
 import { z } from "zod"
 import { Alert } from "../components/Alert"
 import { CalendarBookedLegend } from "../components/CalendarBookedLegend"
@@ -41,6 +41,10 @@ function VenuePhotoFallback({ label }: { label: string }) {
 }
 
 function VenueDetailBody({ venue }: { venue: Venue }) {
+  const location = useLocation()
+  const loginState = {
+    from: { pathname: location.pathname, search: location.search },
+  }
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const [activeImageIndex, setActiveImageIndex] = useState(0)
@@ -486,8 +490,14 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
               </form>
             ) : (
               <Alert tone="info">
-                You need to sign in before you can submit a booking for this
-                stay.
+                <Link
+                  to="/login"
+                  state={loginState}
+                  className="font-semibold underline underline-offset-2"
+                >
+                  Log in
+                </Link>{" "}
+                to book this stay.
               </Alert>
             )}
 
