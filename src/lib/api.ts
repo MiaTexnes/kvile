@@ -1,4 +1,4 @@
-// src/lib/api.ts — Task 11 core
+import type {ApiListResponse, Venue } from './types';
 
 const envBase = import.meta.env.VITE_API_BASE_URL as string | undefined
 const noroffApiKey = (
@@ -91,4 +91,19 @@ export async function holidazeFetch<T>(
   } catch {
     throw new Error(`Response was not valid JSON (${res.status}).`)
   }
+}
+
+export async function fetchVenuesPage(
+  page = 1,
+  limit = 20,
+  opts?: { sort?: string; sortOrder?: string },
+): Promise<ApiListResponse<Venue>> {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    page: String(page),
+  })
+  if (opts?.sort) params.set("sort", opts.sort)
+  if (opts?.sortOrder) params.set("sortOrder", opts.sortOrder)
+  params.set("_owner", "true")
+  return holidazeFetch<ApiListResponse<Venue>>(`/holidaze/venues?${params}`)
 }
