@@ -1,6 +1,7 @@
 import type {
   ApiListResponse,
   ApiResponse,
+  Booking,
   HolidazeProfile,
   LoginResponseData,
   RegisterRequestBody,
@@ -164,6 +165,19 @@ export async function fetchProfile(
   return json.data
 }
 
+export async function fetchProfileBookings(
+  token: string,
+  profileName: string,
+): Promise<ApiListResponse<Booking>> {
+  const json = await fetchHolidazeProfileResponse(token, profileName, {
+    endSessionOn401: false,
+  })
+  return {
+    data: json.data.bookings ?? [],
+    meta: (json.meta ?? {}) as ApiListResponse<Booking>["meta"],
+  }
+}
+
 export async function fetchVenuesPage(
   page = 1,
   limit = 20,
@@ -233,5 +247,18 @@ export async function fetchVenue(
   const qs = params.toString()
   const path = qs ? `/holidaze/venues/${id}?${qs}` : `/holidaze/venues/${id}`
   const json = await holidazeFetch<ApiResponse<Venue>>(path)
+  return json.data
+}
+
+export async function createBooking(
+  token: string,
+  body: { dateFrom: string; dateTo: string; guests: number; venueId: string },
+): Promise<Booking> {
+  const json = await holidazeFetch<ApiResponse<Booking>>("/holidaze/bookings", {
+    method: "POST",
+    token,
+    endSessionOn401: false,
+    body: JSON.stringify(body),
+  })
   return json.data
 }
