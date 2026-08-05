@@ -1,16 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { format } from "date-fns"
-import { startOfToday } from "date-fns"
+import { endOfDay, format, formatISO, startOfDay, startOfToday } from "date-fns"
 import { useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { DayPicker, type DateRange } from "react-day-picker"
 import { Link, useParams } from "react-router-dom"
 import { z } from "zod"
 import { Alert } from "../components/Alert"
 import { CalendarBookedLegend } from "../components/CalendarBookedLegend"
 import { useAuth } from "../context/AuthContext"
-import { fetchVenue } from "../lib/api"
+import { createBooking, fetchVenue } from "../lib/api"
 import {
   isDateBlocked,
   isUnavailableBookedNight,
@@ -43,6 +42,7 @@ function VenuePhotoFallback({ label }: { label: string }) {
 
 function VenueDetailBody({ venue }: { venue: Venue }) {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [brokenImageUrl, setBrokenImageUrl] = useState<string | null>(null)
   const [range, setRange] = useState<DateRange | undefined>(undefined)
@@ -61,6 +61,32 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
   })
   const guestsReg = form.register("guests", { valueAsNumber: true })
   const { errors, isValid } = form.formState
+
+  const isConfirmed = bookingMessage?.includes("confirmed") ?? false
+
+  const mutation = useMutation({
+    mutationFn: async (payload: {
+      dateFrom: string
+      dateTo: string
+      guests: number
+    }) => {
+      if (!user) throw new Error("You must be logged in.")
+      return createBooking(user.accessToken, {
+        ...payload,
+        venueId: venue.id,
+      })
+    },
+    onSuccess: () => {
+      setBookingMessage("Booking confirmed!")
+      setRange(undefined)
+      setDateWarning(null)
+      queryClient.invalidateQueries({ queryKey: ["venue", venue.id] })
+      queryClient.invalidateQueries({ queryKey: ["profile-bookings"] })
+    },
+    onError: (e: Error) => {
+      setBookingMessage(e.message)
+    },
+  })
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 900px)")
@@ -108,7 +134,7 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
     hasCompleteRange &&
     isValid &&
     !dateWarning &&
-    !form.formState.isSubmitting
+    !mutation.isPending
 
   function onSubmit(values: BookingFormValues) {
     setBookingMessage(null)
@@ -124,9 +150,9 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
       setBookingMessage("Those dates overlap an existing booking.")
       return
     }
-    setBookingMessage(
-      "Dates and guest count are valid. API booking is wired in Task 27.",
-    )
+    const dateFrom = formatISO(startOfDay(range.from))
+    const dateTo = formatISO(endOfDay(range.to))
+    mutation.mutate({ dateFrom, dateTo, guests: values.guests })
   }
 
   const images = venue.media ?? []
@@ -418,6 +444,7 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
                     min={1}
                     max={maxGuests || undefined}
                     required
+                    disabled={mutation.isPending}
                     aria-invalid={Boolean(errors.guests) || undefined}
                     aria-describedby={
                       errors.guests
@@ -450,9 +477,11 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
                   aria-disabled={!canSubmit}
                   className="w-full rounded-full bg-mobile-primary py-3.5 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {hasCompleteRange
-                    ? "Review booking details"
-                    : "Pick dates to continue"}
+                  {mutation.isPending
+                    ? "Booking..."
+                    : hasCompleteRange
+                      ? "Confirm booking"
+                      : "Pick dates to continue"}
                 </button>
               </form>
             ) : (
@@ -463,7 +492,9 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
             )}
 
             {bookingMessage ? (
-              <Alert tone="warning">{bookingMessage}</Alert>
+              <Alert tone={isConfirmed ? "success" : "warning"}>
+                {bookingMessage}
+              </Alert>
             ) : null}
           </div>
         </div>
