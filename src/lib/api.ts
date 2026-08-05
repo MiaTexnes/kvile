@@ -1,4 +1,5 @@
-import type {ApiListResponse, Venue } from './types';
+import type { ApiListResponse, Venue } from "./types"
+import { venueMatchesCatalogQuery } from "./filterVenues"
 
 const envBase = import.meta.env.VITE_API_BASE_URL as string | undefined
 const noroffApiKey = (
@@ -73,7 +74,6 @@ export async function holidazeFetch<T>(
 
   const res = await fetch(`${API_BASE_URL}${path}`, { ...rest, headers })
 
-  // Only clear session when we *sent* credentials
   if (res.status === 401 && bearer && endSessionOn401) {
     unauthorizedHandler?.()
   }
@@ -106,4 +106,47 @@ export async function fetchVenuesPage(
   if (opts?.sortOrder) params.set("sortOrder", opts.sortOrder)
   params.set("_owner", "true")
   return holidazeFetch<ApiListResponse<Venue>>(`/holidaze/venues?${params}`)
+}
+
+/**
+ * Server search plus, on page 1, venues from the main catalogue that match `q` client-side.
+ * Noroff search can lag behind `/holidaze/venues`; new listings still show when you search by name/place.
+ */
+export async function fetchVenuesSearchPage(
+  q: string,
+  page = 1,
+  limit = 24,
+  listOpts?: { sort?: string; sortOrder?: string },
+): Promise<ApiListResponse<Venue>> {
+  const trimmed = q.trim()
+  const params = new URLSearchParams({
+    q: trimmed,
+    limit: String(limit),
+    page: String(page),
+  })
+  if (listOpts?.sort) params.set("sort", listOpts.sort)
+  if (listOpts?.sortOrder) params.set("sortOrder", listOpts.sortOrder)
+  params.set("_owner", "true")
+
+  if (!trimmed || page !== 1) {
+    return holidazeFetch<ApiListResponse<Venue>>(
+      `/holidaze/venues/search?${params}`,
+    )
+  }
+
+  const searchPath = `/holidaze/venues/search?${params}`
+  const [search, browse1, browse2] = await Promise.all([
+    holidazeFetch<ApiListResponse<Venue>>(searchPath),
+    fetchVenuesPage(1, 96, listOpts),
+    fetchVenuesPage(2, 96, listOpts),
+  ])
+  const fromBrowse = [...browse1.data, ...browse2.data]
+  const inSearch = new Set(search.data.map((v) => v.id))
+  const extras = fromBrowse.filter(
+    (v) => !inSearch.has(v.id) && venueMatchesCatalogQuery(v, trimmed),
+  )
+  return {
+    data: [...search.data, ...extras],
+    meta: search.meta ?? {},
+  }
 }
