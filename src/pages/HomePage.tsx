@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom'
-import { Alert } from '../components/Alert'
-import { CuratedVenueCard } from '../components/CuratedVenueCard'
-import { useDocumentTitle } from '../lib/useDocumentTitle'
-import { useVenueCatalog } from '../lib/useVenueCatalog'
+import { Link } from "react-router-dom"
+import { Alert } from "../components/Alert"
+import { CuratedVenueCard } from "../components/CuratedVenueCard"
+import { useDocumentTitle } from "../lib/useDocumentTitle"
+import { useVenueCatalog } from "../lib/useVenueCatalog"
 
 export function HomePage() {
   useDocumentTitle(undefined)
@@ -27,12 +27,20 @@ export function HomePage() {
         </div>
       </section>
 
-      <section id="venues" className="scroll-mt-24 bg-surface-sheet py-16 md:py-24">
+      <section
+        id="venues"
+        className="scroll-mt-24 bg-surface-sheet py-16 md:py-24"
+      >
         <div className="mx-auto max-w-screen-2xl px-4 md:px-12">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Recommended stays</h2>
+          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+            Recommended stays
+          </h2>
           <p className="mt-2 text-sm text-on-surface-muted">
-            Hand-picked from our catalogue.{' '}
-            <Link to="/venues" className="font-semibold text-mobile-primary hover:underline">
+            Hand-picked from our catalogue.{" "}
+            <Link
+              to="/venues"
+              className="font-semibold text-mobile-primary hover:underline"
+            >
               View all venues
             </Link>
           </p>
@@ -54,16 +62,30 @@ export function HomePage() {
               No venues to show right now.
             </p>
           ) : (
-            <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-              {catalog.gridVenues.map((v) => (
-                <CuratedVenueCard
-                  key={v.id}
-                  venue={v}
-                  favorited={Boolean(catalog.favorites[v.id])}
-                  onToggleFav={catalog.toggleFavorite}
-                />
-              ))}
-            </div>
+            <>
+              <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+                {catalog.gridVenues.map((v) => (
+                  <CuratedVenueCard
+                    key={v.id}
+                    venue={v}
+                    favorited={Boolean(catalog.favorites[v.id])}
+                    onToggleFav={catalog.toggleFavorite}
+                  />
+                ))}
+              </div>
+              {catalog.canLoadMore ? (
+                <div className="mt-10 flex justify-center">
+                  <button
+                    type="button"
+                    disabled={catalog.isFetchingNextPage}
+                    onClick={() => catalog.fetchNextPage()}
+                    className="rounded-full border border-stone-300 bg-white px-8 py-3 text-sm font-semibold text-holidaze-ink shadow-sm transition hover:bg-stone-50 disabled:opacity-50"
+                  >
+                    {catalog.isFetchingNextPage ? "Loading..." : "Load more"}
+                  </button>
+                </div>
+              ) : null}
+            </>
           )}
         </div>
       </section>
