@@ -24,6 +24,12 @@ const ProtectedRoute = lazy(() =>
   })),
 )
 
+const ManagerRoute = lazy(() =>
+  import("./components/ManagerRoute").then((m) => ({
+    default: m.ManagerRoute,
+  })),
+)
+
 const VenueDetailPage = lazy(() =>
   import("./pages/VenueDetailPage").then((m) => ({
     default: m.VenueDetailPage,
@@ -33,6 +39,12 @@ const VenueDetailPage = lazy(() =>
 const RegisterPage = lazy(() =>
   import("./pages/RegisterPage").then((m) => ({
     default: m.RegisterPage,
+  })),
+)
+
+const ManagerVenuesPage = lazy(() =>
+  import("./pages/Manager/ManagerVenuesPage").then((m) => ({
+    default: m.ManagerVenuesPage,
   })),
 )
 
@@ -60,6 +72,15 @@ export default function App() {
             }
           >
             <Route path="my-bookings" element={<MyBookingsPage />} />
+          </Route>
+          <Route
+            element={
+              <Suspense fallback={routeFallback}>
+                <ManagerRoute />
+              </Suspense>
+            }
+          >
+            <Route path="manager/venues" element={<ManagerVenuesPage />} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Route>
