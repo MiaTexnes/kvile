@@ -1,4 +1,11 @@
-import type { ApiListResponse, ApiResponse, Venue } from "./types"
+import type {
+  ApiListResponse,
+  ApiResponse,
+  HolidazeProfile,
+  LoginResponseData,
+  RegisterRequestBody,
+  Venue,
+} from "./types"
 import { venueMatchesCatalogQuery } from "./filterVenues"
 
 const envBase = import.meta.env.VITE_API_BASE_URL as string | undefined
@@ -10,6 +17,13 @@ export const API_BASE_URL = (envBase ?? "https://v2.api.noroff.dev").replace(
   /\/$/,
   "",
 )
+
+function holidazeProfileSlugCandidates(profileName: string): string[] {
+  const t = profileName.trim()
+  const lower = encodeURIComponent(t.toLowerCase())
+  const raw = encodeURIComponent(t)
+  return lower === raw ? [lower] : [raw, lower]
+}
 
 let unauthorizedHandler: (() => void) | null = null
 
@@ -91,6 +105,63 @@ export async function holidazeFetch<T>(
   } catch {
     throw new Error(`Response was not valid JSON (${res.status}).`)
   }
+}
+
+export async function registerUser(
+  body: RegisterRequestBody,
+): Promise<HolidazeProfile> {
+  const json = await holidazeFetch<ApiResponse<HolidazeProfile>>(
+    "/auth/register",
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    },
+  )
+  return json.data
+}
+
+export async function loginUser(
+  email: string,
+  password: string,
+): Promise<LoginResponseData> {
+  const json = await holidazeFetch<ApiResponse<LoginResponseData>>(
+    "/auth/login?_holidaze=true",
+    {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    },
+  )
+  return json.data
+}
+
+async function fetchHolidazeProfileResponse(
+  token: string,
+  profileName: string,
+  opts?: { endSessionOn401?: boolean },
+): Promise<ApiResponse<HolidazeProfile>> {
+  const endSessionOn401 = opts?.endSessionOn401 ?? true
+  let last: Error | undefined
+  for (const slug of holidazeProfileSlugCandidates(profileName)) {
+    try {
+      return await holidazeFetch<ApiResponse<HolidazeProfile>>(
+        `/holidaze/profiles/${slug}?_bookings=true`,
+        { token, endSessionOn401 },
+      )
+    } catch (e) {
+      last = e instanceof Error ? e : new Error(String(e))
+    }
+  }
+  throw last ?? new Error("Profile request failed")
+}
+
+export async function fetchProfile(
+  token: string,
+  profileName: string,
+): Promise<HolidazeProfile> {
+  const json = await fetchHolidazeProfileResponse(token, profileName, {
+    endSessionOn401: false,
+  })
+  return json.data
 }
 
 export async function fetchVenuesPage(
