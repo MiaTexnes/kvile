@@ -8,8 +8,20 @@ const LoginPage = lazy(() =>
   import("./pages/LoginPage").then((m) => ({ default: m.LoginPage })),
 )
 
+const MyBookingsPage = lazy(() =>
+  import("./pages/MyBookingsPage").then((m) => ({
+    default: m.MyBookingsPage,
+  })),
+)
+
 const NotFoundPage = lazy(() =>
   import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })),
+)
+
+const ProtectedRoute = lazy(() =>
+  import("./components/ProtectedRoute").then((m) => ({
+    default: m.ProtectedRoute,
+  })),
 )
 
 const VenueDetailPage = lazy(() =>
@@ -33,6 +45,15 @@ export default function App() {
           <Route path="venues" element={<VenuesPage />} />
           <Route path="venues/:id" element={<VenueDetailPage />} />
           <Route path="login" element={<LoginPage />} />
+          <Route
+            element={
+              <Suspense fallback={routeFallback}>
+                <ProtectedRoute />
+              </Suspense>
+            }
+          >
+            <Route path="my-bookings" element={<MyBookingsPage />} />
+          </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
