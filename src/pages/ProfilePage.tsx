@@ -47,8 +47,8 @@ export function ProfilePage() {
   const queryClient = useQueryClient()
   const didSeedForm = useRef(false)
   const [becomeHostDismissed, setBecomeHostDismissed] = useState(false)
-  const [avatarBroken, setAvatarBroken] = useState(false)
-  const [bannerBroken, setBannerBroken] = useState(false)
+  const [brokenAvatarUrl, setBrokenAvatarUrl] = useState<string | null>(null)
+  const [brokenBannerUrl, setBrokenBannerUrl] = useState<string | null>(null)
 
   const form = useForm<Form>({
     resolver: zodResolver(schema),
@@ -87,13 +87,10 @@ export function ProfilePage() {
     defaultValue: "Banner",
   })
 
-  useEffect(() => {
-    setAvatarBroken(false)
-  }, [watchedAvatarUrl])
-
-  useEffect(() => {
-    setBannerBroken(false)
-  }, [watchedBannerUrl])
+  const avatarUrl = watchedAvatarUrl.trim()
+  const bannerUrl = watchedBannerUrl.trim()
+  const avatarBroken = brokenAvatarUrl === avatarUrl
+  const bannerBroken = brokenBannerUrl === bannerUrl
 
   const profileQuery = useQuery({
     queryKey: ["profile", "me", user?.name ?? ""],
@@ -555,14 +552,14 @@ export function ProfilePage() {
                 {errors.bannerUrl.message}
               </p>
             ) : null}
-            {watchedBannerUrl?.trim() ? (
+            {bannerUrl ? (
               <div className="mt-3">
                 {!bannerBroken ? (
                   <img
-                    src={watchedBannerUrl.trim()}
+                    src={bannerUrl}
                     alt={watchedBannerAlt?.trim() || "Banner preview"}
                     className="h-28 w-full rounded-xl object-cover"
-                    onError={() => setBannerBroken(true)}
+                    onError={() => setBrokenBannerUrl(bannerUrl)}
                   />
                 ) : (
                   <p role="alert" className="text-sm text-red-700">
@@ -643,14 +640,14 @@ export function ProfilePage() {
                 {errors.avatarUrl.message}
               </p>
             ) : null}
-            {watchedAvatarUrl?.trim() ? (
+            {avatarUrl ? (
               <div className="mt-3">
                 {!avatarBroken ? (
                   <img
-                    src={watchedAvatarUrl.trim()}
+                    src={avatarUrl}
                     alt={watchedAvatarAlt?.trim() || "Avatar preview"}
                     className="h-24 w-24 rounded-full object-cover"
-                    onError={() => setAvatarBroken(true)}
+                    onError={() => setBrokenAvatarUrl(avatarUrl)}
                   />
                 ) : (
                   <p role="alert" className="text-sm text-red-700">
