@@ -291,11 +291,24 @@ export async function createBooking(
 }
 
 // Create/update responses come back as { data: Venue }
-function requireVenuePayload(json: ApiResponse<Venue>, label: string): Venue {
-  if (!json?.data?.id) {
-    throw new Error(`${label}: missing venue in response`)
+function requireVenuePayload(json: unknown, action: string): Venue {
+  if (!json || typeof json !== "object" || !("data" in json)) {
+    throw new Error(
+      `${action}: response was not wrapped in { data: ... }. Check the Network response.`,
+    )
   }
-  return json.data
+  const data = (json as ApiResponse<Venue>).data
+  if (
+    data == null ||
+    typeof data !== "object" ||
+    !("id" in data) ||
+    typeof data.id !== "string"
+  ) {
+    throw new Error(
+      `${action}: response had no venue id. Check the Network response.`,
+    )
+  }
+  return data
 }
 
 // Host dashboard — create venue

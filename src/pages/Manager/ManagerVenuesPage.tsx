@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { Alert } from "../../components/Alert"
 import { useAuth } from "../../context/AuthContext"
 import * as api from "../../lib/api"
@@ -9,15 +9,25 @@ import { useDocumentTitle } from "../../lib/useDocumentTitle"
 
 export function ManagerVenuesPage() {
   const { user } = useAuth()
+  const location = useLocation()
+  const createdVenueId =
+    (location.state as { createdVenueId?: string } | null)?.createdVenueId ??
+    undefined
+
   const q = useQuery({
     queryKey: ["manager-venues", user?.name],
     queryFn: () => api.fetchProfileVenues(user!.accessToken, user!.name),
     enabled: Boolean(user?.venueManager),
   })
   const venues = useMemo(() => sortVenuesNewestFirst(q.data ?? []), [q.data])
+  const isRefreshingAfterCreate =
+    Boolean(createdVenueId) && q.isFetching && venues.length === 0
+
   useDocumentTitle("Host dashboard")
   if (!user?.venueManager) return null
-  if (q.isPending) {
+
+  // Allow success banner through while the list refetches after create
+  if (q.isPending && !createdVenueId) {
     return (
       <p role="status" aria-live="polite" className="text-brand-800">
         Loading your venues...
@@ -27,6 +37,7 @@ export function ManagerVenuesPage() {
   if (q.error) {
     return <Alert tone="error">{(q.error as Error).message}</Alert>
   }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -40,7 +51,27 @@ export function ManagerVenuesPage() {
           New venue
         </Link>
       </div>
-      {venues.length === 0 ? (
+
+      {createdVenueId ? (
+        <Alert tone="success">
+          <strong>Venue created.</strong> It should appear in the list below.{" "}
+          <Link
+            to={`/manager/venues/${createdVenueId}/edit`}
+            className="font-semibold underline"
+          >
+            Edit this venue
+          </Link>
+          .
+        </Alert>
+      ) : null}
+
+      {isRefreshingAfterCreate ? (
+        <p role="status" aria-live="polite">
+          Refreshing your venues...
+        </p>
+      ) : null}
+
+      {!isRefreshingAfterCreate && venues.length === 0 ? (
         <p className="text-brand-800/80">
           You have no venues yet.{" "}
           <Link
@@ -50,7 +81,7 @@ export function ManagerVenuesPage() {
             Create one
           </Link>
         </p>
-      ) : (
+      ) : venues.length > 0 ? (
         <ul className="space-y-4">
           {venues.map((v) => (
             <li
@@ -82,7 +113,7 @@ export function ManagerVenuesPage() {
             </li>
           ))}
         </ul>
-      )}
+      ) : null}
     </div>
   )
 }

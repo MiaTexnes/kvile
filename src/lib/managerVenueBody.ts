@@ -1,5 +1,5 @@
-// POST/PUT /holidaze/venues body. Skip location when address/city/country are all blank —
-// sending nulls alone tends to fail validation.
+// Builds the JSON body for POST/PUT /holidaze/venues. Omits `location` entirely when every
+// field is blank, so strict validators do not reject `{ address: null, ... }`.
 export type ManagerVenueFormValues = {
   name: string
   description: string
