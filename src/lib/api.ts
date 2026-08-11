@@ -178,6 +178,36 @@ export async function fetchProfileBookings(
   }
 }
 
+export async function updateProfile(
+  token: string,
+  profileName: string,
+  body: {
+    bio?: string
+    avatar?: { url: string; alt?: string }
+    banner?: { url: string; alt?: string }
+    venueManager?: boolean
+  },
+): Promise<HolidazeProfile> {
+  let last: Error | undefined
+  for (const slug of holidazeProfileSlugCandidates(profileName)) {
+    try {
+      const json = await holidazeFetch<ApiResponse<HolidazeProfile>>(
+        `/holidaze/profiles/${slug}`,
+        {
+          method: "PUT",
+          token,
+          endSessionOn401: false,
+          body: JSON.stringify(body),
+        },
+      )
+      return json.data
+    } catch (e) {
+      last = e instanceof Error ? e : new Error(String(e))
+    }
+  }
+  throw last ?? new Error("Profile update failed")
+}
+
 export async function fetchVenuesPage(
   page = 1,
   limit = 20,
