@@ -1,7 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMemo } from "react"
 import { useForm, type Resolver } from "react-hook-form"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import { z } from "zod"
 import { Alert } from "../../components/Alert"
 import { useAuth } from "../../context/AuthContext"
@@ -78,17 +79,46 @@ const defaults: Form = {
   country: "",
 }
 
-// create only for now — edit uses the same page later
-export function ManagerVenueFormPage({ mode }: { mode: "create" }) {
-  void mode
-  useDocumentTitle("New venue")
+// create + edit (Task 36) — same form; delete is Task 37
+export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
+  const { id } = useParams<{ id: string }>()
+  useDocumentTitle(mode === "edit" ? "Edit venue" : "New venue")
   const { user } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
+  // Task 36: GET venue for edit prefill
+  const venueQuery = useQuery({
+    queryKey: ["venue", id, "edit"],
+    queryFn: () => api.fetchVenue(id!, { owner: true }),
+    enabled: mode === "edit" && Boolean(id),
+  })
+
+  const editFormValues = useMemo((): Form | undefined => {
+    if (mode !== "edit" || !venueQuery.data) return undefined
+    const v = venueQuery.data
+    return {
+      name: v.name,
+      description: v.description,
+      price: v.price,
+      maxGuests: v.maxGuests,
+      rating: v.rating ?? 0,
+      imageUrl: v.media?.[0]?.url ?? "",
+      wifi: Boolean(v.meta?.wifi),
+      parking: Boolean(v.meta?.parking),
+      breakfast: Boolean(v.meta?.breakfast),
+      pets: Boolean(v.meta?.pets),
+      address: v.location?.address ?? "",
+      city: v.location?.city ?? "",
+      country: v.location?.country ?? "",
+    }
+  }, [mode, venueQuery.data])
+
   const form = useForm<Form>({
     resolver: zodResolver(schema) as Resolver<Form>,
     defaultValues: defaults,
+    // RHF `values` keeps the form in sync once the venue loads
+    ...(editFormValues ? { values: editFormValues } : {}),
   })
   const { errors } = form.formState
 
@@ -96,16 +126,21 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" }) {
     mutationFn: async (values: Form) => {
       if (!user) throw new Error("Not signed in")
       const body = buildVenueUpsertBody(values)
-      // Task 35: create only
-      return api.createVenue(user.accessToken, body)
+      if (mode === "create") return api.createVenue(user.accessToken, body)
+      // Task 36: PUT existing venue
+      return api.updateVenue(user.accessToken, id!, body)
     },
     onSuccess: async (v) => {
       await queryClient.invalidateQueries({ queryKey: ["manager-venues"] })
       await queryClient.invalidateQueries({ queryKey: ["venues"] })
-      navigate("/manager/venues", {
-        replace: true,
-        state: { createdVenueId: v.id },
-      })
+      if (mode === "create") {
+        navigate("/manager/venues", {
+          replace: true,
+          state: { createdVenueId: v.id },
+        })
+      } else {
+        navigate("/manager/venues")
+      }
     },
     onError: (e: Error) => form.setError("root", { message: e.message }),
   })
@@ -121,11 +156,23 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" }) {
 
   if (!user?.venueManager) return null
 
+  // Missing venue → error Alert, not endless loading (Task 36 acceptance)
+  if (mode === "edit" && venueQuery.isPending) {
+    return (
+      <p role="status" aria-live="polite" className="text-brand-800">
+        Loading venue...
+      </p>
+    )
+  }
+  if (mode === "edit" && venueQuery.error) {
+    return <Alert tone="error">{(venueQuery.error as Error).message}</Alert>
+  }
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <h1 className="font-display text-3xl font-semibold text-brand-950">
-          New venue
+          {mode === "edit" ? "Edit venue" : "New venue"}
         </h1>
         <Link
           to="/manager/venues"
