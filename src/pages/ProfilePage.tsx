@@ -47,6 +47,8 @@ export function ProfilePage() {
   const queryClient = useQueryClient()
   const didSeedForm = useRef(false)
   const [becomeHostDismissed, setBecomeHostDismissed] = useState(false)
+  const [avatarBroken, setAvatarBroken] = useState(false)
+  const [bannerBroken, setBannerBroken] = useState(false)
 
   const form = useForm<Form>({
     resolver: zodResolver(schema),
@@ -64,6 +66,34 @@ export function ProfilePage() {
     name: "bio",
     defaultValue: "",
   })
+  const watchedAvatarUrl = useWatch({
+    control: form.control,
+    name: "avatarUrl",
+    defaultValue: "",
+  })
+  const watchedAvatarAlt = useWatch({
+    control: form.control,
+    name: "avatarAlt",
+    defaultValue: "Avatar",
+  })
+  const watchedBannerUrl = useWatch({
+    control: form.control,
+    name: "bannerUrl",
+    defaultValue: "",
+  })
+  const watchedBannerAlt = useWatch({
+    control: form.control,
+    name: "bannerAlt",
+    defaultValue: "Banner",
+  })
+
+  useEffect(() => {
+    setAvatarBroken(false)
+  }, [watchedAvatarUrl])
+
+  useEffect(() => {
+    setBannerBroken(false)
+  }, [watchedBannerUrl])
 
   const profileQuery = useQuery({
     queryKey: ["profile", "me", user?.name ?? ""],
@@ -525,6 +555,23 @@ export function ProfilePage() {
                 {errors.bannerUrl.message}
               </p>
             ) : null}
+            {watchedBannerUrl?.trim() ? (
+              <div className="mt-3">
+                {!bannerBroken ? (
+                  <img
+                    src={watchedBannerUrl.trim()}
+                    alt={watchedBannerAlt?.trim() || "Banner preview"}
+                    className="h-28 w-full rounded-xl object-cover"
+                    onError={() => setBannerBroken(true)}
+                  />
+                ) : (
+                  <p role="alert" className="text-sm text-red-700">
+                    That image URL could not be loaded. Check it is a public
+                    https link.
+                  </p>
+                )}
+              </div>
+            ) : null}
           </div>
           <div>
             <label
@@ -595,6 +642,23 @@ export function ProfilePage() {
               >
                 {errors.avatarUrl.message}
               </p>
+            ) : null}
+            {watchedAvatarUrl?.trim() ? (
+              <div className="mt-3">
+                {!avatarBroken ? (
+                  <img
+                    src={watchedAvatarUrl.trim()}
+                    alt={watchedAvatarAlt?.trim() || "Avatar preview"}
+                    className="h-24 w-24 rounded-full object-cover"
+                    onError={() => setAvatarBroken(true)}
+                  />
+                ) : (
+                  <p role="alert" className="text-sm text-red-700">
+                    That image URL could not be loaded. Check it is a public
+                    https link.
+                  </p>
+                )}
+              </div>
             ) : null}
           </div>
           <div>
