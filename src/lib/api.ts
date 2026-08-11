@@ -290,6 +290,28 @@ export async function createBooking(
   return json.data
 }
 
+// Create/update responses come back as { data: Venue }
+function requireVenuePayload(json: ApiResponse<Venue>, label: string): Venue {
+  if (!json?.data?.id) {
+    throw new Error(`${label}: missing venue in response`)
+  }
+  return json.data
+}
+
+// Host dashboard — create venue
+export async function createVenue(
+  token: string,
+  body: Record<string, unknown>,
+): Promise<Venue> {
+  const json = await holidazeFetch<ApiResponse<Venue>>("/holidaze/venues", {
+    method: "POST",
+    token,
+    endSessionOn401: false,
+    body: JSON.stringify(body),
+  })
+  return requireVenuePayload(json, "Create venue")
+}
+
 // Walk pages via meta — an empty page alone isn't a stop signal
 async function fetchVenueListPaginated(
   token: string | undefined,

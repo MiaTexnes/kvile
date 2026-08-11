@@ -47,7 +47,7 @@ export function ManagerVenuesPage() {
             to="/manager/venues/new"
             className="font-medium text-brand-600 underline"
           >
-            Create your first venue
+            Create one
           </Link>
         </p>
       ) : (
