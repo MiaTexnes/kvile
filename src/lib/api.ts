@@ -325,7 +325,7 @@ export async function createVenue(
   return requireVenuePayload(json, "Create venue")
 }
 
-// Host dashboard — update venue 
+// Host dashboard — update venue
 export async function updateVenue(
   token: string,
   id: string,
@@ -341,6 +341,15 @@ export async function updateVenue(
     },
   )
   return requireVenuePayload(json, "Update venue")
+}
+
+// Host dashboard — delete venue
+export async function deleteVenue(token: string, id: string): Promise<void> {
+  await holidazeFetch<void>(`/holidaze/venues/${id}`, {
+    method: "DELETE",
+    token,
+    endSessionOn401: false,
+  })
 }
 
 // Walk pages via meta — an empty page alone isn't a stop signal

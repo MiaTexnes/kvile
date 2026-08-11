@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useForm, type Resolver } from "react-hook-form"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { z } from "zod"
 import { Alert } from "../../components/Alert"
+import { ConfirmDialog } from "../../components/ConfirmDialog"
 import { useAuth } from "../../context/AuthContext"
 import * as api from "../../lib/api"
 import { buildVenueUpsertBody } from "../../lib/managerVenueBody"
@@ -79,7 +80,7 @@ const defaults: Form = {
   country: "",
 }
 
-// create + edit (Task 36) — same form; delete is Task 37
+// create + edit + delete — same form
 export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
   const { id } = useParams<{ id: string }>()
   useDocumentTitle(mode === "edit" ? "Edit venue" : "New venue")
@@ -87,7 +88,10 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  // Task 36: GET venue for edit prefill
+  // Edit-only delete confirm
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+
+  // GET venue for edit prefill
   const venueQuery = useQuery({
     queryKey: ["venue", id, "edit"],
     queryFn: () => api.fetchVenue(id!, { owner: true }),
@@ -127,7 +131,7 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
       if (!user) throw new Error("Not signed in")
       const body = buildVenueUpsertBody(values)
       if (mode === "create") return api.createVenue(user.accessToken, body)
-      // Task 36: PUT existing venue
+      // PUT existing venue
       return api.updateVenue(user.accessToken, id!, body)
     },
     onSuccess: async (v) => {
@@ -145,6 +149,22 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
     onError: (e: Error) => form.setError("root", { message: e.message }),
   })
 
+  // DELETE then back to dashboard
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("Not signed in")
+      if (!id) throw new Error("Missing venue id")
+      await api.deleteVenue(user.accessToken, id)
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["manager-venues"] })
+      await queryClient.invalidateQueries({ queryKey: ["venues"] })
+      await queryClient.invalidateQueries({ queryKey: ["venue"] })
+      setDeleteConfirmOpen(false)
+      navigate("/manager/venues")
+    },
+  })
+
   async function onSubmit(values: Form) {
     form.clearErrors("root")
     try {
@@ -156,7 +176,7 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
 
   if (!user?.venueManager) return null
 
-  // Missing venue → error Alert, not endless loading (Task 36 acceptance)
+  // Missing venue → error Alert, not endless loading
   if (mode === "edit" && venueQuery.isPending) {
     return (
       <p role="status" aria-live="polite" className="text-brand-800">
@@ -187,6 +207,7 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
         className="space-y-5"
         noValidate
       >
+
         <div>
           <label
             htmlFor="venue-name"
@@ -437,15 +458,59 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
 
         {errors.root ? <Alert tone="error">{errors.root.message}</Alert> : null}
 
-        <button
-          type="submit"
-          disabled={saveMutation.isPending}
-          aria-disabled={saveMutation.isPending}
-          className="w-full rounded-full bg-brand-800 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-900/15 transition hover:bg-brand-950 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-8"
-        >
-          {saveMutation.isPending ? "Saving..." : "Save venue"}
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="submit"
+            disabled={saveMutation.isPending}
+            aria-disabled={saveMutation.isPending}
+            className="w-full rounded-full bg-brand-800 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-900/15 transition hover:bg-brand-950 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-8"
+          >
+            {saveMutation.isPending ? "Saving..." : "Save venue"}
+          </button>
+
+          {/* Edit-only delete opens ConfirmDialog */}
+          {mode === "edit" ? (
+            <button
+              type="button"
+              className="rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-800 outline-none ring-red-500/25 hover:bg-red-50 focus-visible:ring-2"
+              onClick={() => {
+                deleteMutation.reset()
+                setDeleteConfirmOpen(true)
+              }}
+            >
+              Delete venue
+            </button>
+          ) : null}
+        </div>
       </form>
+
+      {/* Same danger confirm as host dashboard */}
+      {mode === "edit" ? (
+        <ConfirmDialog
+          open={deleteConfirmOpen}
+          onOpenChange={(next) => {
+            if (!next) setDeleteConfirmOpen(false)
+          }}
+          title="Delete this venue?"
+          description={
+            <>
+              This permanently removes{" "}
+              <strong>{venueQuery.data?.name ?? "this listing"}</strong> from
+              Kvile. Bookings for this venue may be removed as well. This cannot
+              be undone.
+            </>
+          }
+          confirmLabel="Delete permanently"
+          confirmVariant="danger"
+          onConfirm={() => deleteMutation.mutate()}
+          isConfirming={deleteMutation.isPending}
+          errorMessage={
+            deleteMutation.error
+              ? (deleteMutation.error as Error).message
+              : null
+          }
+        />
+      ) : null}
     </div>
   )
 }

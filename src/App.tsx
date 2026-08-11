@@ -96,7 +96,7 @@ export default function App() {
               path="manager/venues/new"
               element={<ManagerVenueFormPage mode="create" />}
             />
-            {/* Task 36: host edits an existing venue */}
+            {/* Host edits an existing venue */}
             <Route
               path="manager/venues/:id/edit"
               element={<ManagerVenueFormPage mode="edit" />}
