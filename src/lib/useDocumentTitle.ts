@@ -1,9 +1,8 @@
 import { useEffect } from "react"
 
-// Matches the `<title>` shipped in `index.html` for the home route.
+// Keep in sync with <title> in index.html
 export const DEFAULT_DOCUMENT_TITLE = "Kvile | Venue bookings"
 
-// Sets `document.title` for the current screen. Pass `undefined` to use the home default.
 export function useDocumentTitle(segment?: string) {
   useEffect(() => {
     document.title =

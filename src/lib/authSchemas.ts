@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-// Register form schema; mirrors the `RegisterPage` fields.
+// Same fields as RegisterPage
 export const registerFormSchema = z.object({
   name: z
     .string()

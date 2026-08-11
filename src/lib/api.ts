@@ -223,10 +223,7 @@ export async function fetchVenuesPage(
   return holidazeFetch<ApiListResponse<Venue>>(`/holidaze/venues?${params}`)
 }
 
-/**
- * Server search plus, on page 1, venues from the main catalogue that match `q` client-side.
- * Noroff search can lag behind `/holidaze/venues`; new listings still show when you search by name/place.
- */
+// Page 1 also merges in catalogue hits — Noroff search is often behind /venues
 export async function fetchVenuesSearchPage(
   q: string,
   page = 1,

@@ -26,20 +26,16 @@ import {
 import { useFavorites } from "./venueFavorites"
 
 type ApplySearchOptions = {
-  /** Keep `view=saved` when submitting (venues page). Home search leaves `view` unchanged. */
+  // Venues page: keep view=saved after search. Home doesn't touch view.
   keepSavedView?: boolean
   afterApply?: () => void
 }
 
 export type UseVenueCatalogOptions = {
-  /** Pre-select Top Rated (4.5+) + WiFi + Parking for the home Recommended stays grid. */
+  // Home Recommended stays: topRated + wifi + parking
   recommendedStaysDefaults?: boolean
 }
 
-/**
- * Shared infinite catalogue: URL search params, filters, favourites, and TanStack queries
- * for Home and Venues list pages.
- */
 export function useVenueCatalog(options?: UseVenueCatalogOptions) {
   const useRecommendedDefaults = options?.recommendedStaysDefaults === true
   const [searchParams, setSearchParams] = useSearchParams()
@@ -68,13 +64,13 @@ export function useVenueCatalog(options?: UseVenueCatalogOptions) {
   useEffect(() => {
     const g =
       parseGuestsFromSearchParam(guestsKey || null) ?? DEFAULT_SEARCH_GUESTS
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- mirror URL to the field on back/forward or shared links
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync search field when URL changes (back/forward)
     setSearchInput(formatVenueSearchQueryForDisplay(q, g, requirePetsFilter))
   }, [q, guestsKey, requirePetsFilter])
 
   useEffect(() => {
     if (!requirePetsFilter) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reflect pets in search URL on the Pets pill
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- pets in URL should turn on the Pets pill
     setAmenityFilters((prev) =>
       prev.includes("pets") ? prev : [...prev, "pets"],
     )
@@ -88,7 +84,7 @@ export function useVenueCatalog(options?: UseVenueCatalogOptions) {
   useEffect(() => {
     const topRatedParam = searchParams.get("topRated")
     if (topRatedParam === null) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- mirror topRated URL on back/forward
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync topRated from URL on back/forward
     setFilterTopRated(topRatedParam === "1")
   }, [searchParams])
 

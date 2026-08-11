@@ -427,7 +427,7 @@ function MobileBottomDock() {
   );
 }
 
-/** Mobile navigation: branded top bar, bottom dock (primary IA), overflow in a modal sheet */
+// Top bar + bottom dock; hamburger opens the sheet
 export function MobileShell({ dockVisible = true }: { dockVisible?: boolean }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);

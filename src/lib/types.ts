@@ -75,7 +75,7 @@ export interface Venue {
   bookings?: Booking[]
 }
 
-/** Profile resource shape returned by Noroff Holidaze `profiles` endpoints. */
+// Noroff /profiles payload
 export interface HolidazeProfile {
   name: string
   email: string

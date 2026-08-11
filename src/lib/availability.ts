@@ -10,10 +10,7 @@ import {
 } from "date-fns"
 import type { Booking } from "./types"
 
-/**
- * Treats each booking as blocking every calendar day from dateFrom through dateTo **inclusive**
- * (local timezone). Document this in README for assessors.
- */
+// Inclusive end date (local TZ) — same rule as README
 export function isDateBlocked(
   day: Date,
   bookings: Pick<Booking, "dateFrom" | "dateTo">[],
@@ -26,8 +23,7 @@ export function isDateBlocked(
   })
 }
 
-// From today onward, marks nights covered by an existing booking (the red "unavailable" calendar
-// styling). Past nights stay grey via the generic disabled state.
+// Red "booked" days from today; past nights stay grey via disabled
 export function isUnavailableBookedNight(
   day: Date,
   bookings: Pick<Booking, "dateFrom" | "dateTo">[],
