@@ -59,6 +59,24 @@ body {
   background-color: var(--color-cream);
 }
 
+.hero-gradient-surface {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-mobile-surface) 32%, transparent) 0%,
+    color-mix(in srgb, var(--color-mobile-surface) 58%, transparent) 100%
+  );
+}
+
+.hero-gradient-surface-mobile {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 30%,
+    color-mix(in srgb, var(--color-mobile-surface) 36%, transparent) 65%,
+    color-mix(in srgb, var(--color-mobile-surface) 52%, transparent) 100%
+  );
+}
+
 /* Visually hidden until keyboard focus */
 .skip-link {
   position: absolute;
