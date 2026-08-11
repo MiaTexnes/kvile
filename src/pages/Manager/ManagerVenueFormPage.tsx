@@ -6,10 +6,7 @@ import { z } from "zod"
 import { Alert } from "../../components/Alert"
 import { useAuth } from "../../context/AuthContext"
 import * as api from "../../lib/api"
-import {
-  buildVenueUpsertBody,
-  type ManagerVenueFormValues,
-} from "../../lib/managerVenueBody"
+import { buildVenueUpsertBody } from "../../lib/managerVenueBody"
 import { useDocumentTitle } from "../../lib/useDocumentTitle"
 
 const urlOptional = z
@@ -51,7 +48,7 @@ const schema = z.object({
   country: z.string().optional(),
 })
 
-type FormValues = z.output<typeof schema>
+type Form = z.output<typeof schema>
 
 const inputClass =
   "mt-1 w-full rounded-xl border border-stone-300 bg-stone-50/50 px-4 py-2.5 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-600/30 aria-[invalid=true]:border-red-500 aria-[invalid=true]:focus:ring-red-500/30"
@@ -65,7 +62,7 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   )
 }
 
-const defaults: FormValues = {
+const defaults: Form = {
   name: "",
   description: "",
   price: 100,
@@ -89,26 +86,37 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema) as Resolver<FormValues>,
+  const form = useForm<Form>({
+    resolver: zodResolver(schema) as Resolver<Form>,
     defaultValues: defaults,
   })
-  const { errors, isSubmitting } = form.formState
+  const { errors } = form.formState
 
-  const createMutation = useMutation({
-    mutationFn: (values: ManagerVenueFormValues) =>
-      api.createVenue(user!.accessToken, buildVenueUpsertBody(values)),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ["manager-venues", user?.name],
+  const saveMutation = useMutation({
+    mutationFn: async (values: Form) => {
+      if (!user) throw new Error("Not signed in")
+      const body = buildVenueUpsertBody(values)
+      // Task 35: create only
+      return api.createVenue(user.accessToken, body)
+    },
+    onSuccess: async (v) => {
+      await queryClient.invalidateQueries({ queryKey: ["manager-venues"] })
+      await queryClient.invalidateQueries({ queryKey: ["venues"] })
+      navigate("/manager/venues", {
+        replace: true,
+        state: { createdVenueId: v.id },
       })
-      navigate("/manager/venues", { replace: true })
     },
     onError: (e: Error) => form.setError("root", { message: e.message }),
   })
 
-  function onSubmit(values: FormValues) {
-    createMutation.mutate(values)
+  async function onSubmit(values: Form) {
+    form.clearErrors("root")
+    try {
+      await saveMutation.mutateAsync(values)
+    } catch {
+      /* API errors shown via onError → form root Alert */
+    }
   }
 
   if (!user?.venueManager) return null
@@ -384,11 +392,11 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" }) {
 
         <button
           type="submit"
-          disabled={isSubmitting || createMutation.isPending}
-          aria-disabled={isSubmitting || createMutation.isPending}
+          disabled={saveMutation.isPending}
+          aria-disabled={saveMutation.isPending}
           className="w-full rounded-full bg-brand-800 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-900/15 transition hover:bg-brand-950 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-8"
         >
-          {createMutation.isPending ? "Creating…" : "Create venue"}
+          {saveMutation.isPending ? "Saving..." : "Save venue"}
         </button>
       </form>
     </div>
