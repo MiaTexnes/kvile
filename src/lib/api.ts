@@ -325,6 +325,24 @@ export async function createVenue(
   return requireVenuePayload(json, "Create venue")
 }
 
+// Host dashboard — update venue 
+export async function updateVenue(
+  token: string,
+  id: string,
+  body: Record<string, unknown>,
+): Promise<Venue> {
+  const json = await holidazeFetch<ApiResponse<Venue>>(
+    `/holidaze/venues/${id}`,
+    {
+      method: "PUT",
+      token,
+      endSessionOn401: false,
+      body: JSON.stringify(body),
+    },
+  )
+  return requireVenuePayload(json, "Update venue")
+}
+
 // Walk pages via meta — an empty page alone isn't a stop signal
 async function fetchVenueListPaginated(
   token: string | undefined,
