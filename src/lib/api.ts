@@ -289,3 +289,127 @@ export async function createBooking(
   })
   return json.data
 }
+
+// Walk pages via meta — an empty page alone isn't a stop signal
+async function fetchVenueListPaginated(
+  token: string | undefined,
+  pathForPage: (page: number, limit: number) => string,
+): Promise<Venue[]> {
+  const collected: Venue[] = []
+  let page = 1
+  const limit = 100
+  const maxPages = 20
+  for (let i = 0; i < maxPages; i++) {
+    const json = await holidazeFetch<ApiListResponse<Venue>>(
+      pathForPage(page, limit),
+      {
+        token,
+        endSessionOn401: false,
+      },
+    )
+    const rows = Array.isArray(json.data) ? json.data : []
+    collected.push(...rows)
+    const meta = json.meta ?? {}
+    if (meta.isLastPage === true || meta.nextPage == null) break
+    page = typeof meta.nextPage === "number" ? meta.nextPage : page + 1
+  }
+  return collected
+}
+
+async function tryFetchProfileVenuesEmbedded(
+  token: string | undefined,
+  slug: string,
+): Promise<Venue[] | "next"> {
+  try {
+    // `_venues=true` alone can 404 on v2; pairing with `_bookings=true` is more reliable
+    const nested = await holidazeFetch<ApiResponse<HolidazeProfile>>(
+      `/holidaze/profiles/${slug}?_bookings=true&_venues=true`,
+      { token, endSessionOn401: false },
+    )
+    const embedded = nested.data?.venues
+    if (Array.isArray(embedded)) return embedded
+  } catch {
+    return "next"
+  }
+  return "next"
+}
+
+async function tryFetchProfileVenuesViaListEndpoints(
+  token: string | undefined,
+  slug: string,
+): Promise<Venue[] | "next"> {
+  try {
+    // `_owner=true` first — that's the host's own venues
+    const withOwner = await fetchVenueListPaginated(token, (page, lim) => {
+      const p = new URLSearchParams({
+        limit: String(lim),
+        page: String(page),
+        _owner: "true",
+      })
+      return `/holidaze/profiles/${slug}/venues?${p}`
+    })
+    if (withOwner.length > 0) return withOwner
+
+    const subNoOwner = await fetchVenueListPaginated(token, (page, lim) => {
+      const p = new URLSearchParams({
+        limit: String(lim),
+        page: String(page),
+      })
+      return `/holidaze/profiles/${slug}/venues?${p}`
+    })
+    if (subNoOwner.length > 0) return subNoOwner
+
+    const bare = await holidazeFetch<ApiListResponse<Venue>>(
+      `/holidaze/profiles/${slug}/venues`,
+      {
+        token,
+        endSessionOn401: false,
+      },
+    )
+    return Array.isArray(bare.data) ? bare.data : []
+  } catch {
+    return "next"
+  }
+}
+
+function dedupeVenuesById(rows: Venue[]): Venue[] {
+  const byId = new Map<string, Venue>()
+  for (const v of rows) byId.set(v.id, v)
+  return [...byId.values()]
+}
+
+// List endpoint + embedded venues, then dedupe. Skip token for public host pages.
+export async function fetchVenuesByProfileName(
+  profileName: string,
+  token?: string | null,
+): Promise<Venue[]> {
+  const t = typeof token === "string" && token.trim() ? token.trim() : undefined
+
+  for (const slug of holidazeProfileSlugCandidates(profileName)) {
+    const [listed, embedded] = await Promise.all([
+      tryFetchProfileVenuesViaListEndpoints(t, slug),
+      tryFetchProfileVenuesEmbedded(t, slug),
+    ])
+
+    const fromList = listed !== "next" ? listed : []
+    const fromEmbed = embedded !== "next" ? embedded : []
+    const merged = dedupeVenuesById([...fromList, ...fromEmbed])
+    if (merged.length > 0) return merged
+    // Slug resolved but empty — don't keep trying casing variants as if it 404'd
+    if (listed !== "next" || embedded !== "next") return []
+  }
+  return []
+}
+
+// Public host catalogue (no Bearer)
+export function fetchPublicHostVenues(profileName: string): Promise<Venue[]> {
+  return fetchVenuesByProfileName(profileName, undefined)
+}
+
+// Host dashboard — same path, with the manager token
+export async function fetchProfileVenues(
+  token: string,
+  profileName: string,
+): Promise<Venue[]> {
+  return fetchVenuesByProfileName(profileName, token)
+}
