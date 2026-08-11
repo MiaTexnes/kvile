@@ -9,7 +9,7 @@ type Props = {
   onToggleTopRated: () => void
   amenityFilters: readonly VenueAmenityKey[]
   onToggleAmenity: (key: VenueAmenityKey) => void
-  /** `compact` renders the mobile listing chips (no shadow). */
+  // compact = flat chips on mobile (no shadow)
   variant?: "default" | "compact"
   className?: string
 }

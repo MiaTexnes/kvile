@@ -10,11 +10,7 @@ const toneStyles: Record<Tone, string> = {
   warning: "border-amber-300 bg-amber-50 text-amber-900",
 }
 
-/**
- * Announces status/error messages to assistive tech.
- * - Errors use `role="alert"` (assertive).
- * - Non-errors use `role="status"` + `aria-live="polite"`.
- */
+// errors: role=alert; everything else: role=status
 export function Alert({
   tone = "info",
   children,

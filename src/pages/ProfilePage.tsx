@@ -220,7 +220,7 @@ export function ProfilePage() {
   async function onSubmit(values: Form) {
     form.clearErrors("root")
     await profileMutation.mutateAsync(values).catch(() => {
-      /* surfaced via onError -> root */
+      /* error shown via onError */
     })
   }
 

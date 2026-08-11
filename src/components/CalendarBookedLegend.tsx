@@ -5,7 +5,7 @@ type Props = {
   audience: "guest" | "manager"
 }
 
-/** Explains calendar colours for bookings / blocked stays (paired with `.holidaze-day-booked` on DayPicker). */
+// Colour key for the DayPicker booked style
 export function CalendarBookedLegend({ className, audience }: Props) {
   return (
     <div
