@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMemo, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { Alert } from "../../components/Alert"
+import { ConfirmDialog } from "../../components/ConfirmDialog"
 import { useAuth } from "../../context/AuthContext"
 import * as api from "../../lib/api"
 import { sortVenuesNewestFirst } from "../../lib/venueCatalogSort"
@@ -10,9 +11,16 @@ import { useDocumentTitle } from "../../lib/useDocumentTitle"
 export function ManagerVenuesPage() {
   const { user } = useAuth()
   const location = useLocation()
+  const queryClient = useQueryClient()
   const createdVenueId =
     (location.state as { createdVenueId?: string } | null)?.createdVenueId ??
     undefined
+
+  // Which venue the confirm dialog targets
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: string
+    name: string
+  } | null>(null)
 
   const q = useQuery({
     queryKey: ["manager-venues", user?.name],
@@ -22,6 +30,20 @@ export function ManagerVenuesPage() {
   const venues = useMemo(() => sortVenuesNewestFirst(q.data ?? []), [q.data])
   const isRefreshingAfterCreate =
     Boolean(createdVenueId) && q.isFetching && venues.length === 0
+
+  // DELETE venue after ConfirmDialog confirm
+  const deleteMutation = useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      if (!user) throw new Error("Not signed in")
+      await api.deleteVenue(user.accessToken, id)
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["manager-venues"] })
+      await queryClient.invalidateQueries({ queryKey: ["venues"] })
+      await queryClient.invalidateQueries({ queryKey: ["venue"] })
+      setPendingDelete(null)
+    },
+  })
 
   useDocumentTitle("Host dashboard")
   if (!user?.venueManager) return null
@@ -108,12 +130,51 @@ export function ManagerVenuesPage() {
                   >
                     Edit
                   </Link>
+                  {/* Open confirm — no window.confirm */}
+                  <button
+                    type="button"
+                    className="rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-800 outline-none ring-red-500/25 hover:bg-red-50 focus-visible:ring-2"
+                    aria-label={`Delete venue ${v.name}`}
+                    onClick={() => {
+                      deleteMutation.reset()
+                      setPendingDelete({ id: v.id, name: v.name })
+                    }}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             </li>
           ))}
         </ul>
       ) : null}
+
+      {/* Accessible delete confirmation */}
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        onOpenChange={(next) => {
+          if (!next) setPendingDelete(null)
+        }}
+        title="Delete this venue?"
+        description={
+          <>
+            This permanently removes{" "}
+            <strong>{pendingDelete?.name ?? "this listing"}</strong> from Kvile.
+            Bookings for this venue may be removed as well. This cannot be
+            undone.
+          </>
+        }
+        confirmLabel="Delete permanently"
+        confirmVariant="danger"
+        onConfirm={() => {
+          if (!pendingDelete) return
+          deleteMutation.mutate({ id: pendingDelete.id })
+        }}
+        isConfirming={deleteMutation.isPending}
+        errorMessage={
+          deleteMutation.error ? (deleteMutation.error as Error).message : null
+        }
+      />
     </div>
   )
 }
