@@ -299,6 +299,21 @@ export async function createBooking(
   return json.data
 }
 
+// Manager or customer: remove a booking when the API allows it
+export async function deleteBooking(
+  token: string,
+  bookingId: string,
+): Promise<void> {
+  await holidazeFetch<void>(
+    `/holidaze/bookings/${encodeURIComponent(bookingId)}`,
+    {
+      method: "DELETE",
+      token,
+      endSessionOn401: false,
+    },
+  )
+}
+
 // Create/update responses come back as { data: Venue }
 function requireVenuePayload(json: unknown, action: string): Venue {
   if (!json || typeof json !== "object" || !("data" in json)) {

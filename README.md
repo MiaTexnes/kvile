@@ -1,6 +1,6 @@
 # Kvile — exam front end
 
-Customer-facing **venue discovery, search, detail, and booking** plus **venue manager** tools to create, update, delete venues and inspect bookings. **Kvile** is the product name used in this repo; data comes from the **Noroff Holidaze API** (`v2.api.noroff.dev`).
+Customer-facing **venue discovery, search, detail, and booking** plus **venue manager** tools to create, update, delete venues, inspect bookings, and block dates. **Kvile** is the product name used in this repo; data comes from the **Noroff Holidaze API** (`v2.api.noroff.dev`).
 
 ## Visual design
 
@@ -69,6 +69,13 @@ copy .env.example .env
 
 8. **Manager — create / edit / delete venue** — These use `POST` / `PUT` / `DELETE` `/holidaze/venues` and require a **venue manager** profile, **`VITE_NOROFF_API_KEY`**, and a **restarted dev server** after editing `.env`. Request body shape matches [Holidaze Venues → Create venue](https://docs.noroff.dev/docs/v2/holidaze/venues). Use [Swagger UI](https://v2.api.noroff.dev/docs/static/index.html) to inspect the live schema. To obtain an app key, use [`POST /auth/create-api-key`](https://docs.noroff.dev/docs/v2/auth/api-key) or the [API Key Tool](https://docs.noroff.dev/docs/v2/auth/api-key#api-key-tool) in the docs (login, then create key); paste **`data.key`** into **`VITE_NOROFF_API_KEY`**.
 
+9. **Manager date blocks** — There is no separate Holidaze “block dates” API.
+   A venue manager blocks nights by creating a **hold booking** on their own venue
+   (`POST /holidaze/bookings` with `guests: 1`) from
+   `/manager/venues/:id/bookings`. Those nights then appear unavailable on the
+   guest calendar. Holds are listed as “Blocked dates”; **Remove block** deletes
+   that booking. Guest reservations are not deleted from this UI.
+
 ## Routes
 
 Full map (access rules, query strings, diagram): **[docs/route-map.md](docs/route-map.md)**.
@@ -111,13 +118,18 @@ Fill out **[DELIVERY-LINKS.md](./DELIVERY-LINKS.md)** with your Gantt, Figma/XD/
 11. **Create venue** — appears in the manager list.
 12. **Edit venue** — change saves; persists after refresh.
 13. **Bookings** (manager) — open **Bookings** for that venue; reservation ranges and guest counts are listed (customer object appears when the API embeds it).
-14. **Delete venue** — confirm dialog; venue disappears from manager list.
-15. Clone repo fresh, `npm install`, `npm run dev` — matches these instructions.
+14. **Block dates (manager)** — On a venue’s Bookings page, pick a free range,
+    confirm the checkbox, Save block. Those days show as unavailable on the
+    public venue calendar. Remove block restores them.
+15. **Delete venue** — confirm dialog; venue disappears from manager list.
+16. Clone repo fresh, `npm install`, `npm run dev` — matches these instructions.
 
 ## Project structure (high level)
 
 - `src/lib/api.ts` — `fetch` wrapper + Noroff endpoints
 - `src/lib/availability.ts` — date blocking helpers
+- `src/lib/managerVenueBooking.ts` — detect manager hold / block rows
+- `src/lib/hostBookingFeed.ts` — guest-only bookings for host dashboard cards
 - `src/lib/filterVenues.ts` — Catalogue filters (top-rated, amenities, guests)
 - `src/lib/venueFavorites.ts` — client-side favorite storage
 - `src/context/AuthContext.tsx` — session + login/register/logout
