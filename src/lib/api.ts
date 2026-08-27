@@ -270,11 +270,20 @@ export async function fetchVenue(
   const params = new URLSearchParams()
   if (opts?.bookings) params.set("_bookings", "true")
   if (opts?.owner) params.set("_owner", "true")
+  // `_customer=true` embeds guest name/email on each booking
   if (opts?.customer) params.set("_customer", "true")
   const qs = params.toString()
   const path = qs ? `/holidaze/venues/${id}?${qs}` : `/holidaze/venues/${id}`
   const json = await holidazeFetch<ApiResponse<Venue>>(path)
   return json.data
+}
+
+// Host dashboard — venue bookings with guest names. GET is public; token kept for a consistent manager API surface.
+export async function fetchVenueBookingsForManager(
+  _token: string,
+  venueId: string,
+): Promise<Venue> {
+  return fetchVenue(venueId, { bookings: true, customer: true })
 }
 
 export async function createBooking(
