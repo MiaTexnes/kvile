@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
       })
       .catch(() => {
-        /* Offline or profile GET unsupported: keep stored session. */
+        /* Couldn’t refresh the profile (offline / API). Keep the session we already have. */
       })
     return () => {
       cancelled = true
@@ -140,7 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       name = profile.name
       profileEmail = profile.email
     } catch {
-      /* Keep login payload if profile GET fails. */
+      /* Login succeeded; skip extra profile fields if that request fails. */
     }
     const session = {
       accessToken: data.accessToken,
@@ -195,7 +195,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-// eslint-disable-next-line react-refresh/only-export-components -- useAuth paired with provider
+// eslint-disable-next-line react-refresh/only-export-components -- useAuth lives next to AuthProvider so I don't have to split this into two files
 export function useAuth() {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error("useAuth must be used within AuthProvider")
