@@ -58,6 +58,12 @@ const ManagerVenueFormPage = lazy(() =>
   })),
 )
 
+const ManagerVenueBookingsPage = lazy(() =>
+  import("./pages/Manager/ManagerVenueBookingsPage").then((m) => ({
+    default: m.ManagerVenueBookingsPage,
+  })),
+)
+
 const routeFallback = (
   <p role="status" aria-live="polite" className="text-brand-800">
     Loading…
@@ -95,6 +101,11 @@ export default function App() {
             <Route
               path="manager/venues/new"
               element={<ManagerVenueFormPage mode="create" />}
+            />
+            {/* Host sees who booked this venue */}
+            <Route
+              path="manager/venues/:id/bookings"
+              element={<ManagerVenueBookingsPage />}
             />
             {/* Host edits an existing venue */}
             <Route
