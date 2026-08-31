@@ -68,6 +68,24 @@ const ContactPage = lazy(() =>
   import("./pages/ContactPage").then((m) => ({ default: m.ContactPage })),
 )
 
+const HostVenuesPage = lazy(() =>
+  import("./pages/HostVenuesPage").then((m) => ({
+    default: m.HostVenuesPage,
+  })),
+)
+
+const PrivacyPolicyPage = lazy(() =>
+  import("./pages/PrivacyPolicyPage").then((m) => ({
+    default: m.PrivacyPolicyPage,
+  })),
+)
+
+const TermsOfServicePage = lazy(() =>
+  import("./pages/TermsOfServicePage").then((m) => ({
+    default: m.TermsOfServicePage,
+  })),
+)
+
 const routeFallback = (
   <p role="status" aria-live="polite" className="text-brand-800">
     Loading…
@@ -81,10 +99,13 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="venues" element={<VenuesPage />} />
+          <Route path="hosts/:hostName" element={<HostVenuesPage />} />
           <Route path="venues/:id" element={<VenueDetailPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="contact" element={<ContactPage />} />
+          <Route path="privacy" element={<PrivacyPolicyPage />} />
+          <Route path="terms" element={<TermsOfServicePage />} />
           <Route
             element={
               <Suspense fallback={routeFallback}>
