@@ -64,6 +64,10 @@ const ManagerVenueBookingsPage = lazy(() =>
   })),
 )
 
+const ContactPage = lazy(() =>
+  import("./pages/ContactPage").then((m) => ({ default: m.ContactPage })),
+)
+
 const routeFallback = (
   <p role="status" aria-live="polite" className="text-brand-800">
     Loading…
@@ -80,6 +84,7 @@ export default function App() {
           <Route path="venues/:id" element={<VenueDetailPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
+          <Route path="contact" element={<ContactPage />} />
           <Route
             element={
               <Suspense fallback={routeFallback}>
