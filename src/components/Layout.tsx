@@ -127,9 +127,6 @@ function SiteFooter({
             Contact
           </Link>
         </nav>
-        <p className="text-center text-xs text-stone-400 md:text-right">
-          React · Tailwind · Vite
-        </p>
       </div>
     </footer>
   )
