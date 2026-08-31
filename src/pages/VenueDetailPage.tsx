@@ -437,13 +437,13 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
               >
                 <div>
                   <label
-                    htmlFor="booking-guests"
+                    htmlFor="guests"
                     className="text-xs font-semibold uppercase tracking-wide text-on-surface-muted"
                   >
                     Guests
                   </label>
                   <input
-                    id="booking-guests"
+                    id="guests"
                     type="number"
                     min={1}
                     max={maxGuests || undefined}
@@ -451,23 +451,21 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
                     disabled={mutation.isPending}
                     aria-invalid={Boolean(errors.guests) || undefined}
                     aria-describedby={
-                      errors.guests
-                        ? "booking-guests-error"
-                        : "booking-guests-hint"
+                      errors.guests ? "guests-error" : "guests-hint"
                     }
                     className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-mobile-ink outline-none transition focus:border-mobile-primary focus:ring-2 focus:ring-mobile-primary/30 aria-[invalid=true]:border-red-500"
                     {...guestsReg}
                   />
                   <p
-                    id="booking-guests-hint"
+                    id="guests-hint"
                     className="mt-1 text-xs text-on-surface-muted"
                   >
                     Up to {maxGuests} guest{maxGuests === 1 ? "" : "s"} for this
-                    stay.
+                    venue.
                   </p>
                   {errors.guests ? (
                     <p
-                      id="booking-guests-error"
+                      id="guests-error"
                       className="mt-1 text-sm text-red-700"
                       role="alert"
                     >
@@ -502,7 +500,7 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
             )}
 
             {bookingMessage ? (
-              <Alert tone={isConfirmed ? "success" : "warning"}>
+              <Alert tone={isConfirmed ? "success" : "error"}>
                 {bookingMessage}
               </Alert>
             ) : null}

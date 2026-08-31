@@ -207,13 +207,15 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
         className="space-y-5"
         noValidate
       >
-
         <div>
           <label
             htmlFor="venue-name"
             className="text-sm font-medium text-brand-800"
           >
-            Name
+            Name{" "}
+            <span aria-hidden="true" className="text-red-600">
+              *
+            </span>
           </label>
           <input
             id="venue-name"
@@ -232,7 +234,10 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
             htmlFor="venue-description"
             className="text-sm font-medium text-brand-800"
           >
-            Description
+            Description{" "}
+            <span aria-hidden="true" className="text-red-600">
+              *
+            </span>
           </label>
           <textarea
             id="venue-description"
@@ -257,7 +262,10 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
               htmlFor="venue-price"
               className="text-sm font-medium text-brand-800"
             >
-              Price per night
+              Price per night{" "}
+              <span aria-hidden="true" className="text-red-600">
+                *
+              </span>
             </label>
             <input
               id="venue-price"
@@ -278,13 +286,16 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
           </div>
           <div>
             <label
-              htmlFor="venue-max-guests"
+              htmlFor="venue-maxguests"
               className="text-sm font-medium text-brand-800"
             >
-              Max guests
+              Max guests{" "}
+              <span aria-hidden="true" className="text-red-600">
+                *
+              </span>
             </label>
             <input
-              id="venue-max-guests"
+              id="venue-maxguests"
               type="number"
               inputMode="numeric"
               min={1}
@@ -292,13 +303,13 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
               required
               aria-invalid={Boolean(errors.maxGuests) || undefined}
               aria-describedby={
-                errors.maxGuests ? "venue-max-guests-error" : undefined
+                errors.maxGuests ? "venue-maxguests-error" : undefined
               }
               className={inputClass}
               {...form.register("maxGuests", { valueAsNumber: true })}
             />
             <FieldError
-              id="venue-max-guests-error"
+              id="venue-maxguests-error"
               message={errors.maxGuests?.message}
             />
           </div>
@@ -338,25 +349,23 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
 
         <div>
           <label
-            htmlFor="venue-image-url"
+            htmlFor="venue-image"
             className="text-sm font-medium text-brand-800"
           >
             Image URL (optional)
           </label>
           <input
-            id="venue-image-url"
+            id="venue-image"
             type="url"
             inputMode="url"
             autoComplete="off"
             aria-invalid={Boolean(errors.imageUrl) || undefined}
-            aria-describedby={
-              errors.imageUrl ? "venue-image-url-error" : undefined
-            }
+            aria-describedby={errors.imageUrl ? "venue-image-error" : undefined}
             className={inputClass}
             {...form.register("imageUrl")}
           />
           <FieldError
-            id="venue-image-url-error"
+            id="venue-image-error"
             message={errors.imageUrl?.message}
           />
         </div>
@@ -375,11 +384,11 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
           ).map(([key, label]) => (
             <label
               key={key}
-              htmlFor={`venue-${key}`}
+              htmlFor={`amenity-${key}`}
               className="flex cursor-pointer items-center gap-3 text-sm text-brand-800"
             >
               <input
-                id={`venue-${key}`}
+                id={`amenity-${key}`}
                 type="checkbox"
                 className="size-4 rounded border-brand-300"
                 {...form.register(key)}
@@ -403,16 +412,8 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
             <input
               id="venue-address"
               autoComplete="street-address"
-              aria-invalid={Boolean(errors.address) || undefined}
-              aria-describedby={
-                errors.address ? "venue-address-error" : undefined
-              }
               className={inputClass}
               {...form.register("address")}
-            />
-            <FieldError
-              id="venue-address-error"
-              message={errors.address?.message}
             />
           </div>
           <div>
@@ -425,12 +426,9 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
             <input
               id="venue-city"
               autoComplete="address-level2"
-              aria-invalid={Boolean(errors.city) || undefined}
-              aria-describedby={errors.city ? "venue-city-error" : undefined}
               className={inputClass}
               {...form.register("city")}
             />
-            <FieldError id="venue-city-error" message={errors.city?.message} />
           </div>
           <div>
             <label
@@ -442,16 +440,8 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
             <input
               id="venue-country"
               autoComplete="country-name"
-              aria-invalid={Boolean(errors.country) || undefined}
-              aria-describedby={
-                errors.country ? "venue-country-error" : undefined
-              }
               className={inputClass}
               {...form.register("country")}
-            />
-            <FieldError
-              id="venue-country-error"
-              message={errors.country?.message}
             />
           </div>
         </fieldset>

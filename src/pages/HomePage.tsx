@@ -1,15 +1,33 @@
-import { type FormEvent } from "react"
+import { type FormEvent, useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { Link } from "react-router-dom"
 import { Alert } from "../components/Alert"
 import { CuratedVenueCard } from "../components/CuratedVenueCard"
 import { VenueCatalogFilterPills } from "../components/VenueCatalogFilterPills"
 import { VenueCatalogSortSelect } from "../components/VenueCatalogSortSelect"
+import { useMobileHomeSearchChrome } from "../components/mobileHomeSearchChrome"
 import { useDocumentTitle } from "../lib/useDocumentTitle"
 import { useVenueCatalog } from "../lib/useVenueCatalog"
 
 export function HomePage() {
   useDocumentTitle(undefined)
   const catalog = useVenueCatalog({ recommendedStaysDefaults: true })
+  const mobileSearch = useMobileHomeSearchChrome()
+  const searchExpanded = Boolean(mobileSearch?.searchExpanded)
+  const [mobileMount, setMobileMount] = useState<HTMLElement | null>(null)
+  const searchFieldId = "hero-search-mobile-header"
+  const hintId = "hero-search-mobile-hint"
+
+  useEffect(() => {
+    if (!searchExpanded) return
+    const frame = window.requestAnimationFrame(() => {
+      setMobileMount(document.getElementById("kvile-mobile-home-search-mount"))
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [searchExpanded])
+
+  const portalTarget =
+    searchExpanded && mobileMount?.isConnected ? mobileMount : null
 
   function onHeroSearch(e: FormEvent) {
     e.preventDefault()
@@ -22,8 +40,44 @@ export function HomePage() {
     })
   }
 
+  const mobileSearchForm = (
+    <form
+      onSubmit={onHeroSearch}
+      className="flex min-w-0 flex-1 items-center gap-2"
+      role="search"
+    >
+      <div className="min-w-0 flex-1">
+        <label htmlFor={searchFieldId} className="sr-only">
+          Search venues
+        </label>
+        <input
+          id={searchFieldId}
+          type="search"
+          value={catalog.searchInput}
+          onChange={(e) => catalog.setSearchInput(e.target.value)}
+          placeholder="Place, guests, pets..."
+          className="min-h-10 w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-sm text-mobile-ink outline-none ring-mobile-primary/25 focus:ring-2"
+          aria-describedby={hintId}
+        />
+        <span id={hintId} className="sr-only">
+          Combine place or keywords with guest count and the word pets to filter
+          pet-friendly stays. Dates are chosen when you open a venue.
+        </span>
+      </div>
+      <button
+        type="submit"
+        aria-label="Search"
+        className="min-h-10 shrink-0 rounded-full bg-mobile-primary px-4 py-2 text-sm font-bold text-white transition hover:bg-holidaze-blue-hover"
+      >
+        Search
+      </button>
+    </form>
+  )
+
   return (
     <div className="font-manrope text-mobile-ink">
+      {portalTarget ? createPortal(mobileSearchForm, portalTarget) : null}
+
       {/* Desktop hero */}
       <div className="hidden md:block">
         <section className="relative flex h-[min(921px,100svh)] w-full flex-col items-center justify-center pt-24">
@@ -48,12 +102,15 @@ export function HomePage() {
 
             <form
               onSubmit={onHeroSearch}
-              className="mx-auto flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-center"
+              className="mx-auto flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-end"
               role="search"
             >
-              <div className="min-w-0 flex-1">
-                <label htmlFor="hero-search" className="sr-only">
-                  Search venues
+              <div className="min-w-0 flex-1 text-left">
+                <label
+                  htmlFor="hero-search"
+                  className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-mobile-ink"
+                >
+                  Search
                 </label>
                 <input
                   id="hero-search"
@@ -61,17 +118,19 @@ export function HomePage() {
                   value={catalog.searchInput}
                   onChange={(e) => catalog.setSearchInput(e.target.value)}
                   placeholder="Place, guests, pets..."
-                  className="min-h-[48px] w-full rounded-full border border-stone-300 bg-white px-5 py-3 text-sm text-mobile-ink outline-none ring-mobile-primary/25 focus:ring-2"
+                  className="min-h-12 w-full rounded-full border border-stone-300 bg-white px-5 py-3 text-sm text-mobile-ink outline-none ring-mobile-primary/25 focus:ring-2"
                   aria-describedby="hero-search-hint"
                 />
                 <span id="hero-search-hint" className="sr-only">
                   Combine place or keywords with guest count and the word pets
-                  for pet-friendly stays.
+                  to filter pet-friendly stays. Dates are chosen when you open a
+                  venue.
                 </span>
               </div>
               <button
                 type="submit"
-                className="min-h-[48px] shrink-0 rounded-full bg-mobile-primary px-8 py-3 text-sm font-bold text-white transition hover:bg-holidaze-blue-hover"
+                aria-label="Search"
+                className="min-h-12 shrink-0 rounded-full bg-mobile-primary px-8 py-3 text-sm font-bold text-white transition hover:bg-holidaze-blue-hover"
               >
                 Search
               </button>

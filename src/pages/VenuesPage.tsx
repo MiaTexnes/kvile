@@ -55,6 +55,7 @@ export function VenuesPage() {
             <form
               onSubmit={onSearch}
               className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end md:max-w-2xl"
+              role="search"
             >
               <div className="flex min-h-[44px] min-w-0 flex-1 flex-col gap-1">
                 <label htmlFor="venues-search" className="sr-only">
@@ -76,6 +77,7 @@ export function VenuesPage() {
               </div>
               <button
                 type="submit"
+                aria-label="Search"
                 className="min-h-[44px] shrink-0 rounded-full bg-mobile-primary px-8 py-2.5 text-sm font-bold text-white transition hover:bg-holidaze-blue-hover"
               >
                 Search
