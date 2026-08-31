@@ -118,6 +118,9 @@ export function ManagerVenueBookingsPage() {
       blockForm.reset({ acknowledge: false })
       void queryClient.invalidateQueries({ queryKey: ["venue", id] })
     },
+    onError: (e: Error) => {
+      blockForm.setError("root", { message: e.message })
+    },
   })
 
   const deleteBookingMutation = useMutation({
@@ -223,7 +226,10 @@ export function ManagerVenueBookingsPage() {
           </div>
 
           <form
-            onSubmit={blockForm.handleSubmit(() => blockMutation.mutate())}
+            onSubmit={blockForm.handleSubmit(() => {
+              blockForm.clearErrors("root")
+              blockMutation.mutate()
+            })}
             className="flex-1 space-y-4 rounded-2xl border border-dashed border-stone-200 bg-stone-50/50 p-5"
             noValidate
           >
@@ -257,40 +263,51 @@ export function ManagerVenueBookingsPage() {
               </Alert>
             ) : null}
 
-            <label
-              htmlFor="block-acknowledge"
-              className="flex cursor-pointer items-start gap-3 rounded-xl border border-stone-200 bg-white p-3 text-sm text-brand-800"
-            >
+            <div className="flex items-start gap-3">
               <input
                 id="block-acknowledge"
                 type="checkbox"
                 className="mt-0.5 size-4 rounded border-brand-300"
+                {...blockForm.register("acknowledge")}
                 aria-invalid={Boolean(blockErrors.acknowledge) || undefined}
                 aria-describedby={
                   blockErrors.acknowledge
                     ? "block-acknowledge-error"
-                    : undefined
+                    : "block-acknowledge-hint"
                 }
-                {...blockForm.register("acknowledge")}
               />
-              <span>
-                I understand this will book these nights as a host hold (1
-                guest) so customers cannot reserve them.
-              </span>
-            </label>
-            {blockErrors.acknowledge ? (
-              <p
-                id="block-acknowledge-error"
-                className="text-sm text-red-700"
-                role="alert"
-              >
-                {blockErrors.acknowledge.message}
-              </p>
-            ) : null}
+              <div>
+                <label
+                  htmlFor="block-acknowledge"
+                  className="text-sm font-medium text-brand-900"
+                >
+                  Block these dates for guest bookings
+                </label>
+                <p
+                  id="block-acknowledge-hint"
+                  className="mt-1 text-xs text-brand-700/70"
+                >
+                  I understand this will book these nights as a host hold (1
+                  guest) so customers cannot reserve them.
+                </p>
+                {blockErrors.acknowledge ? (
+                  <p
+                    id="block-acknowledge-error"
+                    className="mt-2 text-sm text-red-700"
+                    role="alert"
+                  >
+                    {blockErrors.acknowledge.message}
+                  </p>
+                ) : null}
+              </div>
+            </div>
 
             <button
               type="submit"
               disabled={
+                !hasBlockRange || blockRangeOverlaps || blockMutation.isPending
+              }
+              aria-disabled={
                 !hasBlockRange || blockRangeOverlaps || blockMutation.isPending
               }
               className="w-full rounded-full bg-brand-800 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-900/15 transition hover:bg-brand-950 disabled:cursor-not-allowed disabled:opacity-60"
@@ -298,10 +315,8 @@ export function ManagerVenueBookingsPage() {
               {blockMutation.isPending ? "Saving block..." : "Save block"}
             </button>
 
-            {blockMutation.error ? (
-              <Alert tone="error">
-                {(blockMutation.error as Error).message}
-              </Alert>
+            {blockErrors.root ? (
+              <Alert tone="error">{blockErrors.root.message}</Alert>
             ) : null}
           </form>
         </div>

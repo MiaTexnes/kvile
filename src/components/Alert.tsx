@@ -10,7 +10,6 @@ const toneStyles: Record<Tone, string> = {
   warning: "border-amber-300 bg-amber-50 text-amber-900",
 }
 
-// errors: role=alert; everything else: role=status
 export function Alert({
   tone = "info",
   children,

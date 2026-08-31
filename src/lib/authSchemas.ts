@@ -1,6 +1,5 @@
 import { z } from "zod"
 
-// Same fields as RegisterPage
 export const registerFormSchema = z.object({
   name: z
     .string()
