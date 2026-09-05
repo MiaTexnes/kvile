@@ -6,7 +6,7 @@ import { z } from "zod"
 import { Alert } from "../components/Alert"
 import { useDocumentTitle } from "../lib/useDocumentTitle"
 
-const DEFAULT_TO = "hello@kvile.demo"
+const DEFAULT_TO = "hello@kvile.no"
 
 const schema = z.object({
   name: z.string().max(120, "Name is too long"),
@@ -71,7 +71,8 @@ export function ContactPage() {
           Contact Us
         </h1>
         <p className="mt-2 text-sm text-stone-600 md:text-base">
-          Send a message with your default mail app, or write to{" "}
+          Send a message with your default mail app. We’ll get back to you as
+          soon as we can. You can also write to{" "}
           <a
             className="font-semibold text-mobile-primary underline"
             href={`mailto:${DEFAULT_TO}`}

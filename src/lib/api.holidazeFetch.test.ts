@@ -46,7 +46,7 @@ describe("holidazeFetch", () => {
     const { holidazeFetch } = await loadApiWithoutKey()
     await expect(
       holidazeFetch("/holidaze/profiles/me", { token: "jwt" }),
-    ).rejects.toThrow(/VITE_NOROFF_API_KEY/)
+    ).rejects.toThrow(/try again/i)
     expect(globalThis.fetch).not.toHaveBeenCalled()
   })
 

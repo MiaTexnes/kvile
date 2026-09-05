@@ -203,9 +203,8 @@ export function ManagerVenueBookingsPage() {
             Block dates
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-brand-800/85">
-            Hold nights for maintenance or personal use. This creates a booking
-            on your own venue with 1 guest — there is no separate Holidaze block
-            API. Those nights then show as unavailable on the public calendar.
+            Hold nights for maintenance or personal use. Those dates then show
+            as unavailable on the public calendar.
           </p>
         </div>
 
