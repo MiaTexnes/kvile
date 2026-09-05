@@ -23,6 +23,7 @@ export function RegisterPage() {
       password: "",
       venueManager: false,
     },
+    mode: "onTouched",
   })
   const { errors, isSubmitting } = form.formState
 

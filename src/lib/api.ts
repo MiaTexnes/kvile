@@ -81,7 +81,7 @@ export async function holidazeFetch<T>(
   const bearer = token?.trim()
   if (bearer && !noroffApiKey) {
     throw new Error(
-      "Missing VITE_NOROFF_API_KEY. Noroff requires X-Noroff-API-Key on requests that send a Bearer token. Add your app key to .env (copy from .env.example), then restart the dev server. On Netlify, add the same variable under Site settings > Environment.",
+      "We couldn’t complete that request. Please try again in a moment.",
     )
   }
   if (bearer) headers.set("Authorization", `Bearer ${bearer}`)

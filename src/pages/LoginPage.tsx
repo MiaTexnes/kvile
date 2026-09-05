@@ -37,11 +37,7 @@ export function LoginPage() {
         Welcome back
       </h1>
       <p className="mt-2 text-sm text-brand-800/80">
-        Sign in with your Noroff account. Login uses{" "}
-        <code className="rounded-md bg-stone-100 px-1.5 py-0.5 text-xs font-semibold text-brand-800">
-          _holidaze=true
-        </code>{" "}
-        so the returned profile matches the Noroff Holidaze module.
+        Sign in to your noroff account to book stays and manage your listings.
       </p>
       <form
         onSubmit={form.handleSubmit(onSubmit)}

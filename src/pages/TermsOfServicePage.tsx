@@ -10,23 +10,21 @@ export function TermsOfServicePage() {
           Terms of Service
         </h1>
         <p className="mt-2 text-sm text-stone-500">
-          Educational demo, April 2026
+          Last updated: 5 September 2026
         </p>
       </div>
       <section className="space-y-3 text-sm leading-relaxed md:text-base">
         <h2 className="text-lg font-bold text-mobile-ink">Acceptance</h2>
         <p>
-          By using Kvile you agree these terms apply to the student-built
-          interface only. Actual booking obligations follow the Noroff Holidaze
-          API rules and your relationship with venue managers on the platform.
+          By using Kvile you agree to these terms. Bookings are an agreement
+          between you and the venue host.
         </p>
       </section>
       <section className="space-y-3 text-sm leading-relaxed md:text-base">
         <h2 className="text-lg font-bold text-mobile-ink">Accounts</h2>
         <p>
-          You need a valid Holidaze-enabled Noroff account to book or manage
-          venues. Keep credentials secret; you are responsible for activity
-          performed while logged in on your device.
+          You need an account to book or manage venues. Keep your login details
+          private. You are responsible for activity on your account.
         </p>
       </section>
       <section className="space-y-3 text-sm leading-relaxed md:text-base">
@@ -34,26 +32,28 @@ export function TermsOfServicePage() {
           Bookings & availability
         </h2>
         <p>
-          Availability shown depends on API data. The calendar blocks dates that
-          already have bookings, but always confirm details on the venue page
-          before travel.
+          The calendar shows nights that are already reserved. Always confirm
+          dates, guest count, and house rules on the venue page before you
+          travel.
         </p>
       </section>
       <section className="space-y-3 text-sm leading-relaxed md:text-base">
         <h2 className="text-lg font-bold text-mobile-ink">Disclaimer</h2>
         <p>
-          This project is provided &quot;as is&quot; for assessment. We are not
-          liable for API outages, data mismatches, or travel costs.
+          Listings, prices, and availability are provided by hosts and may
+          change. Kvile is not responsible for travel costs if a stay cannot go
+          ahead as planned.
         </p>
       </section>
       <p className="text-sm">
+        Questions?{" "}
         <Link
           to="/contact"
           className="font-semibold text-mobile-primary underline underline-offset-2"
         >
-          Contact
-        </Link>{" "}
-        for coursework questions.
+          Contact us
+        </Link>
+        .
       </p>
     </article>
   )

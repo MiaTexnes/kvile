@@ -234,16 +234,14 @@ export function ProfilePage() {
           </p>
           {profileEmailMismatch ? (
             <p className="mt-2 text-xs text-brand-800/85" role="status">
-              Your Noroff Holidaze profile record lists a different email:{" "}
+              Your profile lists a different email:{" "}
               <strong>{user.profileEmail}</strong>. Sign-in still used the
-              address you entered; contact Noroff support if the profile email
-              looks wrong on their side.
+              address you entered. Contact us if that looks wrong.
             </p>
           ) : null}
           <p className="mt-3 text-sm text-brand-800/85">
-            Display name and sign-in email come from Noroff and cannot be
-            changed here. Update them through Noroff if needed. You can edit
-            your public bio and profile images below.
+            Display name and sign-in email can&apos;t be changed here. You can
+            still edit your public bio and profile images below.
           </p>
         </div>
 
@@ -253,7 +251,7 @@ export function ProfilePage() {
             role="status"
             aria-live="polite"
           >
-            Loading your profile from the API...
+            Loading your profile...
           </p>
         ) : profileQuery.isError ? (
           <Alert
@@ -400,9 +398,8 @@ export function ProfilePage() {
               </button>
             </div>
             <p className="text-sm text-brand-800/85">
-              Turn on hosting on this account. The API updates your Noroff
-              Holidaze profile; after that, <strong>Host</strong> and the
-              manager tools appear when you use the site.
+              We&apos;ll turn on hosting for this account. After that,{" "}
+              <strong>Host</strong> and the manager tools appear in the menu.
             </p>
             {becomeHostMutation.isError ? (
               <Alert tone="error">
@@ -450,8 +447,7 @@ export function ProfilePage() {
                 Register
               </Link>{" "}
               and tick &quot;Register as venue manager&quot;, or keep this
-              account and use the button above if the API allows upgrading your
-              profile.
+              account and use the button above.
             </p>
           </section>
         )}
@@ -466,10 +462,8 @@ export function ProfilePage() {
             Profile details
           </h2>
           <p className="text-xs text-brand-700/85">
-            Image URLs must be <strong>publicly reachable over https</strong>;
-            invalid URLs typically return API errors. Leaving an image URL empty
-            keeps your current avatar or banner unchanged on the server. Only{" "}
-            <strong>Bio</strong> is refreshed every save.
+            Paste a public https image link. Leave a field blank to keep the
+            current image. Only <strong>Bio</strong> is updated on every save.
           </p>
 
           <div>
@@ -540,8 +534,8 @@ export function ProfilePage() {
               id="profile-banner-url-hint"
               className="text-xs text-brand-700/75"
             >
-              Wide image for your profile header when the API exposes it. Leave
-              blank to keep the current banner.
+              Wide image for your profile header. Leave blank to keep the
+              current banner.
             </p>
             {errors.bannerUrl ? (
               <p
@@ -691,9 +685,7 @@ export function ProfilePage() {
             <Alert tone="error">{errors.root.message}</Alert>
           ) : null}
           {profileMutation.isSuccess && !errors.root ? (
-            <Alert tone="success">
-              Profile updated with the Noroff Holidaze API.
-            </Alert>
+            <Alert tone="success">Profile updated.</Alert>
           ) : null}
           <button
             type="submit"

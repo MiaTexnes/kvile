@@ -58,13 +58,12 @@ export function HostVenuesPage() {
           Venues created by {profileLabel}
         </h1>
         <p className="mt-2 max-w-xl text-sm text-stone-600 md:text-base">
-          Venues from this host on Kvile (Noroff Holidaze catalogue). Open a
-          card for details and booking.
+          Stays listed by this host. Open a card for details and booking.
         </p>
 
         {!user ? (
           <p className="mt-3 max-w-xl text-xs text-stone-500">
-            Tip: You may need to{" "}
+            Some host lists are only visible after you{" "}
             <Link
               to="/login"
               state={{ from: location }}
@@ -72,7 +71,7 @@ export function HostVenuesPage() {
             >
               log in
             </Link>
-            . Noroff often hides profile venue lists from anonymous requests.
+            .
           </p>
         ) : null}
 

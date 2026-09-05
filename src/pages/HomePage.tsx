@@ -561,12 +561,9 @@ export function HomePage() {
             <strong>Kvile</strong> is a Norwegian word for <strong>rest</strong>
             , <strong>quiet</strong>, or <strong>repose</strong> (pronounced
             roughly &ldquo;<span lang="nb">KVee-leh</span>&rdquo;), the pause
-            you earn after the journey. This site is a student-built front end
-            for the Noroff{" "}
-            <span className="font-medium text-mobile-ink">Holidaze</span>{" "}
-            catalogue and API: search unique stays, pick dates that work with
-            real availability, then sign in to book or host venues, all in one
-            place.
+            you earn after the journey. Search unique stays, check real
+            availability, then sign in to book a trip or list a venue of your
+            own.
           </p>
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
             <div className="rounded-2xl border border-stone-200/80 bg-white/80 px-5 py-4 shadow-sm">
