@@ -51,6 +51,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+dialog:not([open]) {
+  display: none !important;
+}
+
 #root {
   min-height: 100svh;
 }
