@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom'
-import type { Venue } from '../lib/types'
-import { hostProfileHref } from '../lib/hostProfilePath'
-import { IconHeart } from './Icons'
+import { Link } from "react-router-dom"
+import type { Venue } from "../lib/types"
+import { hostProfileHref } from "../lib/hostProfilePath"
+import { IconHeart } from "./Icons"
 
 export function CuratedVenueCard({
   venue,
@@ -13,13 +13,18 @@ export function CuratedVenueCard({
   onToggleFav: (id: string) => void
 }) {
   const img = venue.media?.[0]
-  const loc = [venue.location?.city, venue.location?.country].filter(Boolean).join(', ')
+  const loc = [venue.location?.city, venue.location?.country]
+    .filter(Boolean)
+    .join(", ")
   const rating = venue.rating ?? null
 
   return (
     <article className="group overflow-hidden rounded-3xl border border-stone-200/80 bg-white shadow-card shadow-card-hover">
       <div className="relative h-64 overflow-hidden md:h-64">
-        <Link to={`/venues/${venue.id}`} className="block h-full w-full bg-stone-100">
+        <Link
+          to={`/venues/${venue.id}`}
+          className="block h-full w-full bg-stone-100"
+        >
           {img ? (
             <img
               src={img.url}
@@ -39,9 +44,12 @@ export function CuratedVenueCard({
             onToggleFav(venue.id)
           }}
           className="absolute right-4 top-4 flex size-10 items-center justify-center rounded-full bg-mobile-surface/50 text-mobile-ink backdrop-blur-sm transition-colors hover:bg-mobile-surface"
-          aria-label={favorited ? 'Remove from favorites' : 'Save to favorites'}
+          aria-label={favorited ? "Remove from favorites" : "Save to favorites"}
         >
-          <IconHeart filled={favorited} className={favorited ? 'size-5 text-red-500' : 'size-5'} />
+          <IconHeart
+            filled={favorited}
+            className={favorited ? "size-5 text-red-500" : "size-5"}
+          />
         </button>
       </div>
       <div className="p-6">
@@ -61,12 +69,14 @@ export function CuratedVenueCard({
             <span className="text-sm text-stone-400">-</span>
           )}
         </div>
-        {(loc || venue.owner?.name?.trim()) ? (
+        {loc || venue.owner?.name?.trim() ? (
           <div className="mb-4 space-y-1">
-            {loc ? <p className="text-sm text-on-surface-muted">{loc}</p> : null}
+            {loc ? (
+              <p className="text-sm text-on-surface-muted">{loc}</p>
+            ) : null}
             {venue.owner?.name?.trim() ? (
               <p className="text-sm font-medium text-on-surface-muted">
-                Hosted by{' '}
+                Hosted by{" "}
                 <Link
                   to={hostProfileHref(venue.owner.name)}
                   className="font-semibold text-mobile-primary underline-offset-4 hover:text-mobile-ink hover:underline"
@@ -83,8 +93,13 @@ export function CuratedVenueCard({
               From
             </p>
             <p className="mt-0.5">
-              <span className="text-xl font-bold text-mobile-primary tabular-nums">{venue.price}</span>
-              <span className="text-sm font-medium text-on-surface-muted"> / night</span>
+              <span className="text-xl font-bold text-mobile-primary tabular-nums">
+                {venue.price}
+              </span>
+              <span className="text-sm font-medium text-on-surface-muted">
+                {" "}
+                / night
+              </span>
             </p>
           </div>
           <Link

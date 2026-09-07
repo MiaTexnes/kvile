@@ -51,7 +51,7 @@ function SiteFooter({
         </div>
         <div className="mx-auto flex min-w-0 max-w-screen-2xl flex-col items-center gap-6 px-4 md:flex-row md:items-start md:justify-between md:px-12">
           <div className="min-w-0 text-center md:max-w-md md:text-left">
-            <p className="text-stone-500">
+            <p className="text-on-surface-muted">
               © {new Date().getFullYear()} Kvile. Your Digital Sanctuary.
             </p>
           </div>
@@ -61,7 +61,7 @@ function SiteFooter({
               className={({ isActive }) =>
                 isActive
                   ? "text-holidaze-blue underline underline-offset-4"
-                  : "text-stone-500 underline underline-offset-4 transition hover:text-holidaze-blue-hover"
+                  : "text-on-surface-muted underline underline-offset-4 transition hover:text-holidaze-blue-hover"
               }
             >
               Privacy Policy
@@ -71,7 +71,7 @@ function SiteFooter({
               className={({ isActive }) =>
                 isActive
                   ? "text-holidaze-blue underline underline-offset-4"
-                  : "text-stone-500 underline underline-offset-4 transition hover:text-holidaze-blue-hover"
+                  : "text-on-surface-muted underline underline-offset-4 transition hover:text-holidaze-blue-hover"
               }
             >
               Terms of Service
@@ -81,7 +81,7 @@ function SiteFooter({
               className={({ isActive }) =>
                 isActive
                   ? "text-holidaze-blue underline underline-offset-4"
-                  : "text-stone-500 underline underline-offset-4 transition hover:text-holidaze-blue-hover"
+                  : "text-on-surface-muted underline underline-offset-4 transition hover:text-holidaze-blue-hover"
               }
             >
               Contact Us

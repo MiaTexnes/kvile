@@ -62,7 +62,7 @@ export function HostVenuesPage() {
         </p>
 
         {!user ? (
-          <p className="mt-3 max-w-xl text-xs text-stone-500">
+          <p className="mt-3 max-w-xl text-xs text-on-surface-muted">
             Some host lists are only visible after you{" "}
             <Link
               to="/login"
@@ -77,7 +77,7 @@ export function HostVenuesPage() {
 
         {q.isPending ? (
           <p
-            className="mt-10 rounded-3xl border border-dashed border-stone-300 bg-white/70 py-16 text-center text-stone-500"
+            className="mt-10 rounded-3xl border border-dashed border-stone-300 bg-white/70 py-16 text-center text-on-surface-muted"
             role="status"
             aria-live="polite"
           >
@@ -108,7 +108,7 @@ export function HostVenuesPage() {
             <Alert tone="error">{(q.error as Error).message}</Alert>
           </div>
         ) : venues.length === 0 ? (
-          <p className="mt-10 rounded-3xl border border-stone-200 bg-white py-16 text-center text-stone-500">
+          <p className="mt-10 rounded-3xl border border-stone-200 bg-white py-16 text-center text-on-surface-muted">
             No venues are listed for this host right now.
           </p>
         ) : (

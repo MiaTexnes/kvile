@@ -360,7 +360,7 @@ export function ProfilePage() {
                 Your venues
               </Link>
               <Link
-                to="/manager/venues"
+                to="/manager/venues/new"
                 className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border-2 border-brand-800 px-4 py-2.5 text-center text-sm font-semibold text-brand-950 transition hover:bg-brand-800/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 sm:flex-initial sm:min-w-[10rem]"
               >
                 Add a venue

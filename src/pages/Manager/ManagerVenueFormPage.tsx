@@ -10,6 +10,7 @@ import { useAuth } from "../../context/AuthContext"
 import * as api from "../../lib/api"
 import { buildVenueUpsertBody } from "../../lib/managerVenueBody"
 import { useDocumentTitle } from "../../lib/useDocumentTitle"
+import { isCurrentUserVenueOwner } from "../../lib/managerOwnership"
 
 const urlOptional = z
   .string()
@@ -186,6 +187,21 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
   }
   if (mode === "edit" && venueQuery.error) {
     return <Alert tone="error">{(venueQuery.error as Error).message}</Alert>
+  }
+
+  if (
+    mode === "edit" &&
+    venueQuery.data &&
+    !isCurrentUserVenueOwner(venueQuery.data.owner?.name, user.name)
+  ) {
+    return (
+      <Alert tone="error">
+        You can only edit venues you manage.{" "}
+        <Link to="/manager/venues" className="font-semibold underline">
+          Back to your venues
+        </Link>
+      </Alert>
+    )
   }
 
   return (

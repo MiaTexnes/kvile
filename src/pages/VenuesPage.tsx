@@ -123,7 +123,7 @@ export function VenuesPage() {
 
         {catalog.loading ? (
           <p
-            className="rounded-3xl border border-dashed border-stone-300 bg-white/70 py-16 text-center text-stone-500"
+            className="rounded-3xl border border-dashed border-stone-300 bg-white/70 py-16 text-center text-on-surface-muted"
             role="status"
             aria-live="polite"
           >
@@ -133,7 +133,7 @@ export function VenuesPage() {
           <Alert tone="error">{(catalog.error as Error).message}</Alert>
         ) : catalog.gridVenues.length === 0 ? (
           <p
-            className="rounded-3xl border border-stone-200 bg-white py-16 text-center text-stone-500"
+            className="rounded-3xl border border-stone-200 bg-white py-16 text-center text-on-surface-muted"
             role="status"
             aria-live="polite"
           >
