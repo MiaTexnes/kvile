@@ -1,0 +1,15 @@
+# Netlify build + SPA routing for Kvile (Vite + React Router).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Client-side routes (/venues/:id, /login, /profile, …) have no real files.
+# Serve index.html so React Router can handle the path.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
