@@ -8,7 +8,7 @@ import { KVILE_LOGO_SRC } from "./KvileLogo"
 import { SiteHeader } from "./SiteHeader"
 import { SkipLink } from "./SkipLink"
 
-/** Reserve space for fixed `MobileBottomDock` + safe area on small screens. */
+// Room for the fixed bottom dock + home indicator on phones
 const MOBILE_DOCK_BOTTOM_PAD =
   "max-md:pb-[calc(7.5rem+env(safe-area-inset-bottom))]"
 
@@ -127,9 +127,6 @@ function SiteFooter({
             Contact
           </Link>
         </nav>
-        <p className="text-center text-xs text-stone-400 md:text-right">
-          React · Tailwind · Vite
-        </p>
       </div>
     </footer>
   )

@@ -1,6 +1,7 @@
 import type {
   ApiListResponse,
   ApiResponse,
+  Booking,
   HolidazeProfile,
   LoginResponseData,
   RegisterRequestBody,
@@ -80,7 +81,7 @@ export async function holidazeFetch<T>(
   const bearer = token?.trim()
   if (bearer && !noroffApiKey) {
     throw new Error(
-      "Missing VITE_NOROFF_API_KEY. Noroff requires X-Noroff-API-Key on requests that send a Bearer token. Add your app key to .env (copy from .env.example), then restart the dev server. On Netlify, add the same variable under Site settings > Environment.",
+      "We couldn’t complete that request. Please try again in a moment.",
     )
   }
   if (bearer) headers.set("Authorization", `Bearer ${bearer}`)
@@ -164,6 +165,49 @@ export async function fetchProfile(
   return json.data
 }
 
+export async function fetchProfileBookings(
+  token: string,
+  profileName: string,
+): Promise<ApiListResponse<Booking>> {
+  const json = await fetchHolidazeProfileResponse(token, profileName, {
+    endSessionOn401: false,
+  })
+  return {
+    data: json.data.bookings ?? [],
+    meta: (json.meta ?? {}) as ApiListResponse<Booking>["meta"],
+  }
+}
+
+export async function updateProfile(
+  token: string,
+  profileName: string,
+  body: {
+    bio?: string
+    avatar?: { url: string; alt?: string }
+    banner?: { url: string; alt?: string }
+    venueManager?: boolean
+  },
+): Promise<HolidazeProfile> {
+  let last: Error | undefined
+  for (const slug of holidazeProfileSlugCandidates(profileName)) {
+    try {
+      const json = await holidazeFetch<ApiResponse<HolidazeProfile>>(
+        `/holidaze/profiles/${slug}`,
+        {
+          method: "PUT",
+          token,
+          endSessionOn401: false,
+          body: JSON.stringify(body),
+        },
+      )
+      return json.data
+    } catch (e) {
+      last = e instanceof Error ? e : new Error(String(e))
+    }
+  }
+  throw last ?? new Error("Profile update failed")
+}
+
 export async function fetchVenuesPage(
   page = 1,
   limit = 20,
@@ -179,10 +223,7 @@ export async function fetchVenuesPage(
   return holidazeFetch<ApiListResponse<Venue>>(`/holidaze/venues?${params}`)
 }
 
-/**
- * Server search plus, on page 1, venues from the main catalogue that match `q` client-side.
- * Noroff search can lag behind `/holidaze/venues`; new listings still show when you search by name/place.
- */
+// Page 1 also merges in catalogue hits — Noroff search is often behind /venues
 export async function fetchVenuesSearchPage(
   q: string,
   page = 1,
@@ -229,9 +270,232 @@ export async function fetchVenue(
   const params = new URLSearchParams()
   if (opts?.bookings) params.set("_bookings", "true")
   if (opts?.owner) params.set("_owner", "true")
+  // `_customer=true` embeds guest name/email on each booking
   if (opts?.customer) params.set("_customer", "true")
   const qs = params.toString()
   const path = qs ? `/holidaze/venues/${id}?${qs}` : `/holidaze/venues/${id}`
   const json = await holidazeFetch<ApiResponse<Venue>>(path)
   return json.data
+}
+
+// Host dashboard — venue bookings with guest names. GET is public; token kept for a consistent manager API surface.
+export async function fetchVenueBookingsForManager(
+  _token: string,
+  venueId: string,
+): Promise<Venue> {
+  return fetchVenue(venueId, { bookings: true, customer: true })
+}
+
+export async function createBooking(
+  token: string,
+  body: { dateFrom: string; dateTo: string; guests: number; venueId: string },
+): Promise<Booking> {
+  const json = await holidazeFetch<ApiResponse<Booking>>("/holidaze/bookings", {
+    method: "POST",
+    token,
+    endSessionOn401: false,
+    body: JSON.stringify(body),
+  })
+  return json.data
+}
+
+// Manager or customer: remove a booking when the API allows it
+export async function deleteBooking(
+  token: string,
+  bookingId: string,
+): Promise<void> {
+  await holidazeFetch<void>(
+    `/holidaze/bookings/${encodeURIComponent(bookingId)}`,
+    {
+      method: "DELETE",
+      token,
+      endSessionOn401: false,
+    },
+  )
+}
+
+// Create/update responses come back as { data: Venue }
+function requireVenuePayload(json: unknown, action: string): Venue {
+  if (!json || typeof json !== "object" || !("data" in json)) {
+    throw new Error(
+      `${action}: response was not wrapped in { data: ... }. Check the Network response.`,
+    )
+  }
+  const data = (json as ApiResponse<Venue>).data
+  if (
+    data == null ||
+    typeof data !== "object" ||
+    !("id" in data) ||
+    typeof data.id !== "string"
+  ) {
+    throw new Error(
+      `${action}: response had no venue id. Check the Network response.`,
+    )
+  }
+  return data
+}
+
+// Host dashboard — create venue
+export async function createVenue(
+  token: string,
+  body: Record<string, unknown>,
+): Promise<Venue> {
+  const json = await holidazeFetch<ApiResponse<Venue>>("/holidaze/venues", {
+    method: "POST",
+    token,
+    endSessionOn401: false,
+    body: JSON.stringify(body),
+  })
+  return requireVenuePayload(json, "Create venue")
+}
+
+// Host dashboard — update venue
+export async function updateVenue(
+  token: string,
+  id: string,
+  body: Record<string, unknown>,
+): Promise<Venue> {
+  const json = await holidazeFetch<ApiResponse<Venue>>(
+    `/holidaze/venues/${id}`,
+    {
+      method: "PUT",
+      token,
+      endSessionOn401: false,
+      body: JSON.stringify(body),
+    },
+  )
+  return requireVenuePayload(json, "Update venue")
+}
+
+// Host dashboard — delete venue
+export async function deleteVenue(token: string, id: string): Promise<void> {
+  await holidazeFetch<void>(`/holidaze/venues/${id}`, {
+    method: "DELETE",
+    token,
+    endSessionOn401: false,
+  })
+}
+
+// Walk pages via meta — an empty page alone isn't a stop signal
+async function fetchVenueListPaginated(
+  token: string | undefined,
+  pathForPage: (page: number, limit: number) => string,
+): Promise<Venue[]> {
+  const collected: Venue[] = []
+  let page = 1
+  const limit = 100
+  const maxPages = 20
+  for (let i = 0; i < maxPages; i++) {
+    const json = await holidazeFetch<ApiListResponse<Venue>>(
+      pathForPage(page, limit),
+      {
+        token,
+        endSessionOn401: false,
+      },
+    )
+    const rows = Array.isArray(json.data) ? json.data : []
+    collected.push(...rows)
+    const meta = json.meta ?? {}
+    if (meta.isLastPage === true || meta.nextPage == null) break
+    page = typeof meta.nextPage === "number" ? meta.nextPage : page + 1
+  }
+  return collected
+}
+
+async function tryFetchProfileVenuesEmbedded(
+  token: string | undefined,
+  slug: string,
+): Promise<Venue[] | "next"> {
+  try {
+    // `_venues=true` alone can 404 on v2; pairing with `_bookings=true` is more reliable
+    const nested = await holidazeFetch<ApiResponse<HolidazeProfile>>(
+      `/holidaze/profiles/${slug}?_bookings=true&_venues=true`,
+      { token, endSessionOn401: false },
+    )
+    const embedded = nested.data?.venues
+    if (Array.isArray(embedded)) return embedded
+  } catch {
+    return "next"
+  }
+  return "next"
+}
+
+async function tryFetchProfileVenuesViaListEndpoints(
+  token: string | undefined,
+  slug: string,
+): Promise<Venue[] | "next"> {
+  try {
+    // `_owner=true` first — that's the host's own venues
+    const withOwner = await fetchVenueListPaginated(token, (page, lim) => {
+      const p = new URLSearchParams({
+        limit: String(lim),
+        page: String(page),
+        _owner: "true",
+      })
+      return `/holidaze/profiles/${slug}/venues?${p}`
+    })
+    if (withOwner.length > 0) return withOwner
+
+    const subNoOwner = await fetchVenueListPaginated(token, (page, lim) => {
+      const p = new URLSearchParams({
+        limit: String(lim),
+        page: String(page),
+      })
+      return `/holidaze/profiles/${slug}/venues?${p}`
+    })
+    if (subNoOwner.length > 0) return subNoOwner
+
+    const bare = await holidazeFetch<ApiListResponse<Venue>>(
+      `/holidaze/profiles/${slug}/venues`,
+      {
+        token,
+        endSessionOn401: false,
+      },
+    )
+    return Array.isArray(bare.data) ? bare.data : []
+  } catch {
+    return "next"
+  }
+}
+
+function dedupeVenuesById(rows: Venue[]): Venue[] {
+  const byId = new Map<string, Venue>()
+  for (const v of rows) byId.set(v.id, v)
+  return [...byId.values()]
+}
+
+// List endpoint + embedded venues, then dedupe. Skip token for public host pages.
+export async function fetchVenuesByProfileName(
+  profileName: string,
+  token?: string | null,
+): Promise<Venue[]> {
+  const t = typeof token === "string" && token.trim() ? token.trim() : undefined
+
+  for (const slug of holidazeProfileSlugCandidates(profileName)) {
+    const [listed, embedded] = await Promise.all([
+      tryFetchProfileVenuesViaListEndpoints(t, slug),
+      tryFetchProfileVenuesEmbedded(t, slug),
+    ])
+
+    const fromList = listed !== "next" ? listed : []
+    const fromEmbed = embedded !== "next" ? embedded : []
+    const merged = dedupeVenuesById([...fromList, ...fromEmbed])
+    if (merged.length > 0) return merged
+    // Slug resolved but empty — don't keep trying casing variants as if it 404'd
+    if (listed !== "next" || embedded !== "next") return []
+  }
+  return []
+}
+
+// Public host catalogue (no Bearer)
+export function fetchPublicHostVenues(profileName: string): Promise<Venue[]> {
+  return fetchVenuesByProfileName(profileName, undefined)
+}
+
+// Host dashboard — same path, with the manager token
+export async function fetchProfileVenues(
+  token: string,
+  profileName: string,
+): Promise<Venue[]> {
+  return fetchVenuesByProfileName(profileName, token)
 }

@@ -33,12 +33,12 @@ export function catalogSortFromSearchParam(raw: string | null): CatalogSortMode 
   return 'default'
 }
 
-/** URL `sort` query value; omit for default API order. */
+// null = drop sort from the URL (API default order)
 export function catalogSortToSearchParam(mode: CatalogSortMode): string | null {
   return mode === 'default' ? null : mode
 }
 
-/** Noroff list/search `sort` / `sortOrder` when the API should pre-order pages. */
+// Maps our sort mode to Noroff's sort + sortOrder
 export function noroffCatalogSortQuery(
   mode: CatalogSortMode,
 ): { sort: string; sortOrder: string } | undefined {
@@ -54,7 +54,7 @@ export function noroffCatalogSortQuery(
   }
 }
 
-/** Stable client order by `updated` then `created` (matches host dashboard behaviour). */
+// Prefer updated, then created (same idea as the host list)
 export function sortVenuesNewestFirst(venues: Venue[]): Venue[] {
   return [...venues].sort((a, b) => {
     const ta = a.updated ?? a.created
@@ -78,7 +78,7 @@ export function sortVenuesByRatingDesc(venues: Venue[]): Venue[] {
   return [...venues].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
 }
 
-/** Re-order loaded catalogue pages (infinite scroll merges before filters). */
+// Sort after pages are merged; filters run after this
 export function sortVenuesByCatalogMode(venues: Venue[], mode: CatalogSortMode): Venue[] {
   switch (mode) {
     case 'newest':

@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { Component, type ErrorInfo, type ReactNode } from "react"
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -8,11 +8,11 @@ interface ErrorBoundaryState {
   error: Error | null
 }
 
-/**
- * Catches render-time errors anywhere below it so a single thrown component
- * shows an accessible recovery message instead of a blank white screen.
- */
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+// Catch render crashes so we don't flash a blank page
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   state: ErrorBoundaryState = { error: null }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
@@ -20,11 +20,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('Unhandled UI error:', error, info.componentStack)
+    console.error("Unhandled UI error:", error, info.componentStack)
   }
 
   handleReload = () => {
-    window.location.assign('/')
+    window.location.assign("/")
   }
 
   render() {
@@ -32,10 +32,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     return (
       <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-6 text-center">
-        <div role="alert" className="w-full rounded-2xl border border-red-300 bg-red-50 px-6 py-8 text-red-900">
+        <div
+          role="alert"
+          className="w-full rounded-2xl border border-red-300 bg-red-50 px-6 py-8 text-red-900"
+        >
           <h1 className="text-2xl font-semibold">Something went wrong</h1>
           <p className="mt-3 text-sm leading-relaxed">
-            An unexpected error stopped this page from loading. You can return home and try again.
+            An unexpected error stopped this page from loading. You can return
+            home and try again.
           </p>
           <button
             type="button"

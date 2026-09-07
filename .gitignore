@@ -28,7 +28,7 @@ dist-ssr
 .env.local
 .env.*.local
 
-# Test coverage
+# Test Coverage
 coverage
 
 # TypeScript

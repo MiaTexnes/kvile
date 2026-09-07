@@ -1,11 +1,15 @@
-import { format } from "date-fns"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { endOfDay, format, formatISO, startOfDay, startOfToday } from "date-fns"
 import { useEffect, useMemo, useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useForm } from "react-hook-form"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { DayPicker, type DateRange } from "react-day-picker"
-import { Link, useParams } from "react-router-dom"
+import { Link, useLocation, useParams } from "react-router-dom"
+import { z } from "zod"
 import { Alert } from "../components/Alert"
 import { CalendarBookedLegend } from "../components/CalendarBookedLegend"
-import { fetchVenue } from "../lib/api"
+import { useAuth } from "../context/AuthContext"
+import { createBooking, fetchVenue } from "../lib/api"
 import {
   isDateBlocked,
   isUnavailableBookedNight,
@@ -14,7 +18,15 @@ import {
 import { hostProfileHref } from "../lib/hostProfilePath"
 import type { Booking, Venue } from "../lib/types"
 import { useDocumentTitle } from "../lib/useDocumentTitle"
-import { startOfToday } from "date-fns"
+
+const bookingSchema = z.object({
+  guests: z
+    .number({ error: "Guests required" })
+    .int("Guests must be a whole number")
+    .min(1, "At least 1 guest"),
+})
+
+type BookingFormValues = z.infer<typeof bookingSchema>
 
 function VenuePhotoFallback({ label }: { label: string }) {
   return (
@@ -29,15 +41,56 @@ function VenuePhotoFallback({ label }: { label: string }) {
 }
 
 function VenueDetailBody({ venue }: { venue: Venue }) {
+  const location = useLocation()
+  const loginState = {
+    from: { pathname: location.pathname, search: location.search },
+  }
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [brokenImageUrl, setBrokenImageUrl] = useState<string | null>(null)
   const [range, setRange] = useState<DateRange | undefined>(undefined)
   const [dateWarning, setDateWarning] = useState<string | null>(null)
+  const [bookingMessage, setBookingMessage] = useState<string | null>(null)
   const [showTwoMonths, setShowTwoMonths] = useState(
     () =>
       typeof window !== "undefined" &&
       window.matchMedia("(min-width: 900px)").matches,
   )
+
+  const form = useForm<BookingFormValues>({
+    resolver: zodResolver(bookingSchema),
+    defaultValues: { guests: 2 },
+    mode: "onChange",
+  })
+  const guestsReg = form.register("guests", { valueAsNumber: true })
+  const { errors, isValid } = form.formState
+
+  const isConfirmed = bookingMessage?.includes("confirmed") ?? false
+
+  const mutation = useMutation({
+    mutationFn: async (payload: {
+      dateFrom: string
+      dateTo: string
+      guests: number
+    }) => {
+      if (!user) throw new Error("You must be logged in.")
+      return createBooking(user.accessToken, {
+        ...payload,
+        venueId: venue.id,
+      })
+    },
+    onSuccess: () => {
+      setBookingMessage("Booking confirmed!")
+      setRange(undefined)
+      setDateWarning(null)
+      queryClient.invalidateQueries({ queryKey: ["venue", venue.id] })
+      queryClient.invalidateQueries({ queryKey: ["profile-bookings"] })
+    },
+    onError: (e: Error) => {
+      setBookingMessage(e.message)
+    },
+  })
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 900px)")
@@ -66,6 +119,7 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
 
   function handleRangeSelect(next: DateRange | undefined) {
     setRange(next)
+    setBookingMessage(null)
     if (
       next?.from &&
       next?.to &&
@@ -75,6 +129,34 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
     } else {
       setDateWarning(null)
     }
+  }
+
+  const maxGuests = venue.maxGuests ?? 0
+  const hasCompleteRange = Boolean(range?.from && range?.to)
+  const canSubmit =
+    Boolean(user) &&
+    hasCompleteRange &&
+    isValid &&
+    !dateWarning &&
+    !mutation.isPending
+
+  function onSubmit(values: BookingFormValues) {
+    setBookingMessage(null)
+    if (!range?.from || !range.to) {
+      setBookingMessage("Please select a check-in and check-out range.")
+      return
+    }
+    if (values.guests > maxGuests) {
+      setBookingMessage(`This venue allows at most ${maxGuests} guests.`)
+      return
+    }
+    if (rangeOverlapsBooking(range.from, range.to, bookings)) {
+      setBookingMessage("Those dates overlap an existing booking.")
+      return
+    }
+    const dateFrom = formatISO(startOfDay(range.from))
+    const dateTo = formatISO(endOfDay(range.to))
+    mutation.mutate({ dateFrom, dateTo, guests: values.guests })
   }
 
   const images = venue.media ?? []
@@ -91,8 +173,6 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
     venue.location?.country,
   ].filter(Boolean)
   const locationLine = locParts.join(", ")
-
-  const hasCompleteRange = Boolean(range?.from && range?.to)
 
   return (
     <div className="font-manrope mx-auto max-w-5xl space-y-10 px-4 pb-16 text-stone-700 md:px-0">
@@ -348,6 +428,82 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
               </p>
             ) : null}
             {dateWarning ? <Alert tone="warning">{dateWarning}</Alert> : null}
+
+            {user ? (
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4 border-t border-stone-200/80 pt-4"
+                noValidate
+              >
+                <div>
+                  <label
+                    htmlFor="guests"
+                    className="text-xs font-semibold uppercase tracking-wide text-on-surface-muted"
+                  >
+                    Guests
+                  </label>
+                  <input
+                    id="guests"
+                    type="number"
+                    min={1}
+                    max={maxGuests || undefined}
+                    required
+                    disabled={mutation.isPending}
+                    aria-invalid={Boolean(errors.guests) || undefined}
+                    aria-describedby={
+                      errors.guests ? "guests-error" : "guests-hint"
+                    }
+                    className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-mobile-ink outline-none transition focus:border-mobile-primary focus:ring-2 focus:ring-mobile-primary/30 aria-[invalid=true]:border-red-500"
+                    {...guestsReg}
+                  />
+                  <p
+                    id="guests-hint"
+                    className="mt-1 text-xs text-on-surface-muted"
+                  >
+                    Up to {maxGuests} guest{maxGuests === 1 ? "" : "s"} for this
+                    venue.
+                  </p>
+                  {errors.guests ? (
+                    <p
+                      id="guests-error"
+                      className="mt-1 text-sm text-red-700"
+                      role="alert"
+                    >
+                      {errors.guests.message}
+                    </p>
+                  ) : null}
+                </div>
+                <button
+                  type="submit"
+                  disabled={!canSubmit}
+                  aria-disabled={!canSubmit}
+                  className="w-full rounded-full bg-mobile-primary py-3.5 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {mutation.isPending
+                    ? "Booking..."
+                    : hasCompleteRange
+                      ? "Confirm booking"
+                      : "Pick dates to continue"}
+                </button>
+              </form>
+            ) : (
+              <Alert tone="info">
+                <Link
+                  to="/login"
+                  state={loginState}
+                  className="font-semibold underline underline-offset-2"
+                >
+                  Log in
+                </Link>{" "}
+                to book this stay.
+              </Alert>
+            )}
+
+            {bookingMessage ? (
+              <Alert tone={isConfirmed ? "success" : "error"}>
+                {bookingMessage}
+              </Alert>
+            ) : null}
           </div>
         </div>
       </section>

@@ -1,22 +1,17 @@
-import clsx from 'clsx'
-import type { ReactNode } from 'react'
+import clsx from "clsx"
+import type { ReactNode } from "react"
 
-type Tone = 'error' | 'success' | 'info' | 'warning'
+type Tone = "error" | "success" | "info" | "warning"
 
 const toneStyles: Record<Tone, string> = {
-  error: 'border-red-300 bg-red-50 text-red-900',
-  success: 'border-emerald-300 bg-emerald-50 text-emerald-900',
-  info: 'border-brand-200 bg-brand-50 text-brand-950',
-  warning: 'border-amber-300 bg-amber-50 text-amber-900',
+  error: "border-red-300 bg-red-50 text-red-900",
+  success: "border-emerald-300 bg-emerald-50 text-emerald-900",
+  info: "border-brand-200 bg-brand-50 text-brand-950",
+  warning: "border-amber-300 bg-amber-50 text-amber-900",
 }
 
-/**
- * Announces status/error messages to assistive tech.
- * - Errors use `role="alert"` (assertive).
- * - Non-errors use `role="status"` + `aria-live="polite"`.
- */
 export function Alert({
-  tone = 'info',
+  tone = "info",
   children,
   className,
 }: {
@@ -24,13 +19,13 @@ export function Alert({
   children: ReactNode
   className?: string
 }) {
-  const isError = tone === 'error'
+  const isError = tone === "error"
   return (
     <div
-      role={isError ? 'alert' : 'status'}
-      aria-live={isError ? 'assertive' : 'polite'}
+      role={isError ? "alert" : "status"}
+      aria-live={isError ? "assertive" : "polite"}
       className={clsx(
-        'rounded-xl border px-4 py-3 text-sm leading-relaxed',
+        "rounded-xl border px-4 py-3 text-sm leading-relaxed",
         toneStyles[tone],
         className,
       )}

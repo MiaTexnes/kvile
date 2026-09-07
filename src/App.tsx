@@ -14,6 +14,10 @@ const MyBookingsPage = lazy(() =>
   })),
 )
 
+const ProfilePage = lazy(() =>
+  import("./pages/ProfilePage").then((m) => ({ default: m.ProfilePage })),
+)
+
 const NotFoundPage = lazy(() =>
   import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })),
 )
@@ -48,6 +52,40 @@ const ManagerVenuesPage = lazy(() =>
   })),
 )
 
+const ManagerVenueFormPage = lazy(() =>
+  import("./pages/Manager/ManagerVenueFormPage").then((m) => ({
+    default: m.ManagerVenueFormPage,
+  })),
+)
+
+const ManagerVenueBookingsPage = lazy(() =>
+  import("./pages/Manager/ManagerVenueBookingsPage").then((m) => ({
+    default: m.ManagerVenueBookingsPage,
+  })),
+)
+
+const ContactPage = lazy(() =>
+  import("./pages/ContactPage").then((m) => ({ default: m.ContactPage })),
+)
+
+const HostVenuesPage = lazy(() =>
+  import("./pages/HostVenuesPage").then((m) => ({
+    default: m.HostVenuesPage,
+  })),
+)
+
+const PrivacyPolicyPage = lazy(() =>
+  import("./pages/PrivacyPolicyPage").then((m) => ({
+    default: m.PrivacyPolicyPage,
+  })),
+)
+
+const TermsOfServicePage = lazy(() =>
+  import("./pages/TermsOfServicePage").then((m) => ({
+    default: m.TermsOfServicePage,
+  })),
+)
+
 const routeFallback = (
   <p role="status" aria-live="polite" className="text-brand-800">
     Loading…
@@ -61,9 +99,13 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="venues" element={<VenuesPage />} />
+          <Route path="hosts/:hostName" element={<HostVenuesPage />} />
           <Route path="venues/:id" element={<VenueDetailPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
+          <Route path="contact" element={<ContactPage />} />
+          <Route path="privacy" element={<PrivacyPolicyPage />} />
+          <Route path="terms" element={<TermsOfServicePage />} />
           <Route
             element={
               <Suspense fallback={routeFallback}>
@@ -72,6 +114,7 @@ export default function App() {
             }
           >
             <Route path="my-bookings" element={<MyBookingsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
           <Route
             element={
@@ -81,6 +124,20 @@ export default function App() {
             }
           >
             <Route path="manager/venues" element={<ManagerVenuesPage />} />
+            <Route
+              path="manager/venues/new"
+              element={<ManagerVenueFormPage mode="create" />}
+            />
+            {/* Host sees who booked this venue */}
+            <Route
+              path="manager/venues/:id/bookings"
+              element={<ManagerVenueBookingsPage />}
+            />
+            {/* Host edits an existing venue */}
+            <Route
+              path="manager/venues/:id/edit"
+              element={<ManagerVenueFormPage mode="edit" />}
+            />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Route>

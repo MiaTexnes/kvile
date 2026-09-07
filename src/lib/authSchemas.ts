@@ -1,6 +1,5 @@
 import { z } from "zod"
 
-// Register form schema; mirrors the `RegisterPage` fields.
 export const registerFormSchema = z.object({
   name: z
     .string()
@@ -10,7 +9,7 @@ export const registerFormSchema = z.object({
     .string()
     .email("Enter a valid email")
     .refine((e) => e.toLowerCase().endsWith("stud.noroff.no"), {
-      message: "Must be a stud.noroff.no email",
+      message: "Email must end with @stud.noroff.no",
     }),
   password: z.string().min(8, "Password must be at least 8 characters"),
   venueManager: z.boolean(),
