@@ -9,7 +9,7 @@ export function PrivacyPolicyPage() {
         <h1 className="text-3xl font-bold text-mobile-ink md:text-4xl">
           Privacy Policy
         </h1>
-        <p className="mt-2 text-sm text-stone-500">
+        <p className="mt-2 text-sm text-on-surface-muted">
           Last updated: 5 September 2026
         </p>
       </div>

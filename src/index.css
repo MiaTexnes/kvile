@@ -4,7 +4,10 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-manrope: "Manrope", ui-sans-serif, system-ui, sans-serif;
-  --font-marketing-display: "Fraunces", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-marketing-display:
+    "Fraunces", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-display:
+    "Fraunces", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
   --color-cream: #f5f4f1;
   --color-mobile-surface: #f2f6f4;
@@ -126,7 +129,11 @@ dialog:not([open]) {
 .rdp-root {
   --rdp-accent-color: var(--color-holidaze-blue);
   --rdp-accent-background-color: var(--color-brand-100);
-  --rdp-range_middle-background-color: color-mix(in oklch, var(--color-brand-100), white);
+  --rdp-range_middle-background-color: color-mix(
+    in oklch,
+    var(--color-brand-100),
+    white
+  );
 }
 
 .rdp-root .rdp-day.holidaze-day-booked.rdp-disabled:not(.rdp-selected),

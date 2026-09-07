@@ -1,4 +1,4 @@
-import type { SVGProps } from 'react'
+import type { SVGProps } from "react"
 
 type IconProps = SVGProps<SVGSVGElement> & { className?: string }
 
@@ -11,7 +11,7 @@ export function IconHeart({
     <svg
       className={className}
       viewBox="0 0 24 24"
-      fill={filled ? 'currentColor' : 'none'}
+      fill={filled ? "currentColor" : "none"}
       stroke="currentColor"
       strokeWidth={1.8}
       aria-hidden="true"
@@ -39,7 +39,11 @@ export function IconPin({ className, ...rest }: IconProps) {
       focusable="false"
       {...rest}
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
+      />
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -139,7 +143,11 @@ export function IconLandscape({ className, ...rest }: IconProps) {
       focusable="false"
       {...rest}
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 20h18L9 5 3 20zm9-9l3 5h-6l3-5z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3 20h18L9 5 3 20zm9-9l3 5h-6l3-5z"
+      />
     </svg>
   )
 }
@@ -292,7 +300,11 @@ export function IconClose({ className, ...rest }: IconProps) {
       focusable="false"
       {...rest}
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6 18L18 6M6 6l12 12"
+      />
     </svg>
   )
 }

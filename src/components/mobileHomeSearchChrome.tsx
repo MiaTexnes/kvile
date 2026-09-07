@@ -1,13 +1,13 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext } from "react"
 
 type MobileHomeSearchChromeContextValue = {
-  searchExpanded: boolean;
-  setSearchExpanded: (expanded: boolean) => void;
-};
+  searchExpanded: boolean
+  setSearchExpanded: (expanded: boolean) => void
+}
 
 export const MobileHomeSearchChromeContext =
-  createContext<MobileHomeSearchChromeContextValue | null>(null);
+  createContext<MobileHomeSearchChromeContextValue | null>(null)
 
 export function useMobileHomeSearchChrome() {
-  return useContext(MobileHomeSearchChromeContext);
+  return useContext(MobileHomeSearchChromeContext)
 }

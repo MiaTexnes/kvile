@@ -1,7 +1,7 @@
-import clsx from "clsx";
-import { useEffect, useId, useRef, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import clsx from "clsx"
+import { useEffect, useId, useRef, useState } from "react"
+import { Link, NavLink, useLocation } from "react-router-dom"
+import { useAuth } from "../context/AuthContext"
 import {
   IconClose,
   IconExplore,
@@ -12,35 +12,35 @@ import {
   IconPin,
   IconSearch,
   IconUser,
-} from "./Icons";
-import { KvileLogo } from "./KvileLogo";
-import { useMobileHomeSearchChrome } from "./mobileHomeSearchChrome";
+} from "./Icons"
+import { KvileLogo } from "./KvileLogo"
+import { useMobileHomeSearchChrome } from "./mobileHomeSearchChrome"
 
 function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  const a = parts[0]?.[0] ?? "?";
-  const b = parts[1]?.[0] ?? "";
-  return (a + b).toUpperCase();
+  const parts = name.trim().split(/\s+/)
+  const a = parts[0]?.[0] ?? "?"
+  const b = parts[1]?.[0] ?? ""
+  return (a + b).toUpperCase()
 }
 
 const dockItem =
-  "flex min-h-[3rem] flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-2 text-[11px] font-semibold leading-tight tracking-tight transition-colors active:scale-[0.98] font-manrope";
+  "flex min-h-[3rem] flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-2 text-[11px] font-semibold leading-tight tracking-tight transition-colors active:scale-[0.98] font-manrope"
 
 type MobileNavDialogProps = {
-  dialogRef: React.RefObject<HTMLDialogElement | null>;
-};
+  dialogRef: React.RefObject<HTMLDialogElement | null>
+}
 
 function MobileNavDialog({ dialogRef }: MobileNavDialogProps) {
-  const titleId = useId();
-  const { pathname, search, hash } = useLocation();
-  const { user, logout } = useAuth();
+  const titleId = useId()
+  const { pathname, search, hash } = useLocation()
+  const { user, logout } = useAuth()
 
   useEffect(() => {
-    dialogRef.current?.close();
-  }, [pathname, search, dialogRef]);
+    dialogRef.current?.close()
+  }, [pathname, search, dialogRef])
 
   function closeSheet() {
-    dialogRef.current?.close();
+    dialogRef.current?.close()
   }
 
   return (
@@ -55,12 +55,12 @@ function MobileNavDialog({ dialogRef }: MobileNavDialogProps) {
       aria-labelledby={titleId}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) {
-          closeSheet();
+          closeSheet()
         }
       }}
       onCancel={(e) => {
-        e.preventDefault();
-        closeSheet();
+        e.preventDefault()
+        closeSheet()
       }}
     >
       <div
@@ -124,15 +124,15 @@ function MobileNavDialog({ dialogRef }: MobileNavDialogProps) {
               <Link
                 to={{ pathname: "/", hash: "about" }}
                 onClick={(e) => {
-                  closeSheet();
+                  closeSheet()
                   if (pathname === "/" && hash === "#about") {
-                    e.preventDefault();
+                    e.preventDefault()
                     window.requestAnimationFrame(() =>
                       document.getElementById("about")?.scrollIntoView({
                         behavior: "smooth",
                         block: "start",
                       }),
-                    );
+                    )
                   }
                 }}
                 className="flex min-h-12 items-center rounded-xl px-3 text-[15px] font-semibold text-brand-950 hover:bg-stone-50"
@@ -201,8 +201,8 @@ function MobileNavDialog({ dialogRef }: MobileNavDialogProps) {
               type="button"
               className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-stone-200/90 text-[15px] font-semibold text-brand-950 transition hover:bg-stone-50"
               onClick={() => {
-                closeSheet();
-                logout();
+                closeSheet()
+                logout()
               }}
             >
               <IconLogOut className="size-5 shrink-0" />
@@ -212,7 +212,7 @@ function MobileNavDialog({ dialogRef }: MobileNavDialogProps) {
         ) : null}
       </div>
     </dialog>
-  );
+  )
 }
 
 function MobileTopBar({
@@ -221,40 +221,40 @@ function MobileTopBar({
   searchExpanded,
   onSearchExpandedChange,
 }: {
-  menuOpen: boolean;
-  onToggleRequest: () => void;
-  searchExpanded: boolean;
-  onSearchExpandedChange: (expanded: boolean) => void;
+  menuOpen: boolean
+  onToggleRequest: () => void
+  searchExpanded: boolean
+  onSearchExpandedChange: (expanded: boolean) => void
 }) {
-  const { user } = useAuth();
-  const { pathname } = useLocation();
-  const showHomeSearch = pathname === "/";
-  const searchPanelId = "kvile-mobile-home-search-panel";
+  const { user } = useAuth()
+  const { pathname } = useLocation()
+  const showHomeSearch = pathname === "/"
+  const searchPanelId = "kvile-mobile-home-search-panel"
 
   useEffect(() => {
     if (!showHomeSearch) {
-      onSearchExpandedChange(false);
+      onSearchExpandedChange(false)
     }
-  }, [showHomeSearch, onSearchExpandedChange]);
+  }, [showHomeSearch, onSearchExpandedChange])
 
   useEffect(() => {
-    if (!searchExpanded) return;
+    if (!searchExpanded) return
     const frame = window.requestAnimationFrame(() => {
-      document.getElementById("hero-search-mobile-header")?.focus();
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [searchExpanded]);
+      document.getElementById("hero-search-mobile-header")?.focus()
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [searchExpanded])
 
   useEffect(() => {
-    if (!searchExpanded) return;
+    if (!searchExpanded) return
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        onSearchExpandedChange(false);
+        onSearchExpandedChange(false)
       }
     }
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [searchExpanded, onSearchExpandedChange]);
+    document.addEventListener("keydown", onKeyDown)
+    return () => document.removeEventListener("keydown", onKeyDown)
+  }, [searchExpanded, onSearchExpandedChange])
 
   return (
     <header className="fixed top-0 z-[65] w-full overflow-x-clip border-b border-stone-200/60 pt-[env(safe-area-inset-top)] bg-mobile-surface/80 backdrop-blur-xl supports-[backdrop-filter]:bg-mobile-surface/72 md:hidden">
@@ -331,10 +331,7 @@ function MobileTopBar({
           id={searchPanelId}
           className="flex items-center gap-2 border-t border-stone-200/50 px-3 py-2"
         >
-          <div
-            id="kvile-mobile-home-search-mount"
-            className="min-w-0 flex-1"
-          />
+          <div id="kvile-mobile-home-search-mount" className="min-w-0 flex-1" />
           <button
             type="button"
             onClick={() => onSearchExpandedChange(false)}
@@ -346,16 +343,16 @@ function MobileTopBar({
         </div>
       ) : null}
     </header>
-  );
+  )
 }
 
 function MobileBottomDock() {
-  const { pathname, search } = useLocation();
-  const viewSaved = new URLSearchParams(search).get("view") === "saved";
-  const exploreActive = pathname === "/" && !viewSaved;
+  const { pathname, search } = useLocation()
+  const viewSaved = new URLSearchParams(search).get("view") === "saved"
+  const exploreActive = pathname === "/" && !viewSaved
   const venuesTabActive =
-    pathname.startsWith("/venues/") || (pathname === "/venues" && !viewSaved);
-  const tripsActive = pathname === "/my-bookings";
+    pathname.startsWith("/venues/") || (pathname === "/venues" && !viewSaved)
+  const tripsActive = pathname === "/my-bookings"
 
   return (
     <nav
@@ -424,39 +421,39 @@ function MobileBottomDock() {
         </NavLink>
       </div>
     </nav>
-  );
+  )
 }
 
 // Top bar + bottom dock; hamburger opens the sheet
 export function MobileShell({ dockVisible = true }: { dockVisible?: boolean }) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const mobileSearchChrome = useMobileHomeSearchChrome();
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const mobileSearchChrome = useMobileHomeSearchChrome()
   if (!mobileSearchChrome) {
     throw new Error(
       "MobileShell must be rendered inside MobileHomeSearchChromeContext.Provider (see Layout.tsx).",
-    );
+    )
   }
-  const { searchExpanded, setSearchExpanded } = mobileSearchChrome;
+  const { searchExpanded, setSearchExpanded } = mobileSearchChrome
 
   useEffect(() => {
-    const el = dialogRef.current;
-    if (!el) return;
+    const el = dialogRef.current
+    if (!el) return
     function syncOpen() {
-      setMenuOpen(dialogRef.current?.open ?? false);
+      setMenuOpen(dialogRef.current?.open ?? false)
     }
-    el.addEventListener("toggle", syncOpen as EventListener);
-    return () => el.removeEventListener("toggle", syncOpen as EventListener);
-  }, []);
+    el.addEventListener("toggle", syncOpen as EventListener)
+    return () => el.removeEventListener("toggle", syncOpen as EventListener)
+  }, [])
 
   function toggleMenu() {
-    const el = dialogRef.current;
-    if (!el) return;
+    const el = dialogRef.current
+    if (!el) return
     if (el.open) {
-      el.close();
-      return;
+      el.close()
+      return
     }
-    el.showModal();
+    el.showModal()
   }
 
   return (
@@ -470,5 +467,5 @@ export function MobileShell({ dockVisible = true }: { dockVisible?: boolean }) {
       <MobileNavDialog dialogRef={dialogRef} />
       {dockVisible ? <MobileBottomDock /> : null}
     </>
-  );
+  )
 }

@@ -100,7 +100,10 @@ export function ContactPage() {
             className="text-sm font-medium text-stone-800"
           >
             Name{" "}
-            <span id="contact-name-hint" className="font-normal text-stone-500">
+            <span
+              id="contact-name-hint"
+              className="font-normal text-on-surface-muted"
+            >
               (optional)
             </span>
           </label>
@@ -133,7 +136,7 @@ export function ContactPage() {
             Email (for reply){" "}
             <span
               id="contact-email-hint"
-              className="font-normal text-stone-500"
+              className="font-normal text-on-surface-muted"
             >
               (optional)
             </span>
@@ -182,7 +185,7 @@ export function ContactPage() {
           {!errors.message ? (
             <p
               id="contact-message-hint"
-              className="mt-1 text-xs text-stone-500"
+              className="mt-1 text-xs text-on-surface-muted"
             >
               At least 10 characters before we open your mail app.
             </p>
@@ -203,7 +206,7 @@ export function ContactPage() {
           Open in email app
         </button>
       </form>
-      <p className="text-center text-sm text-stone-500">
+      <p className="text-center text-sm text-on-surface-muted">
         <Link
           to="/"
           className="text-mobile-primary underline underline-offset-2"
