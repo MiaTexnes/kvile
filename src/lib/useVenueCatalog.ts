@@ -84,7 +84,7 @@ export function useVenueCatalog(options?: UseVenueCatalogOptions) {
   useEffect(() => {
     const topRatedParam = searchParams.get("topRated")
     if (topRatedParam === null) return
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- keep Top Rated in line with the query string on back/forward or a shared link
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- keep Top Rated in line with the query string on back/forward or a shared link
     setFilterTopRated(topRatedParam === "1")
   }, [searchParams])
 

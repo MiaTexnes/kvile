@@ -26,6 +26,7 @@ import {
 } from "../../lib/availability"
 import { isManagersOwnBookingBlock } from "../../lib/managerVenueBooking"
 import { useDocumentTitle } from "../../lib/useDocumentTitle"
+import { isCurrentUserVenueOwner } from "../../lib/managerOwnership"
 import type { Booking } from "../../lib/types"
 
 const blockFormSchema = z.object({
@@ -149,6 +150,17 @@ export function ManagerVenueBookingsPage() {
     return (
       <Alert tone="error">
         {(q.error as Error)?.message ?? "Venue not found."}
+      </Alert>
+    )
+  }
+
+  if (!isCurrentUserVenueOwner(venue.owner?.name, user?.name)) {
+    return (
+      <Alert tone="error">
+        You can only view bookings for venues you manage.{" "}
+        <Link to="/manager/venues" className="font-semibold underline">
+          Back to your venues
+        </Link>
       </Alert>
     )
   }

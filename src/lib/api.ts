@@ -283,7 +283,7 @@ export async function fetchVenueBookingsForManager(
   _token: string,
   venueId: string,
 ): Promise<Venue> {
-  return fetchVenue(venueId, { bookings: true, customer: true })
+  return fetchVenue(venueId, { bookings: true, customer: true, owner: true })
 }
 
 export async function createBooking(

@@ -5,7 +5,7 @@ export function NotFoundPage() {
   useDocumentTitle("Page Not Found")
   return (
     <div className="font-manrope mx-auto max-w-lg rounded-2xl border border-stone-200 bg-white px-8 py-12 text-center shadow-sm">
-      <p className="text-sm font-semibold uppercase tracking-widest text-stone-500">
+      <p className="text-sm font-semibold uppercase tracking-widest text-on-surface-muted">
         404
       </p>
       <h1 className="mt-2 text-2xl font-bold text-mobile-ink">
