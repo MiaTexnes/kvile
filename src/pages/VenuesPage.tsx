@@ -54,7 +54,7 @@ export function VenuesPage() {
             </div>
             <form
               onSubmit={onSearch}
-              className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start md:max-w-2xl"
+              className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end md:max-w-2xl"
               role="search"
             >
               <div className="flex min-h-[44px] min-w-0 flex-1 flex-col gap-1">
@@ -75,24 +75,13 @@ export function VenuesPage() {
                   for pet-friendly stays.
                 </span>
               </div>
-              <div className="flex shrink-0 flex-col items-stretch gap-1 sm:items-center">
-                <button
-                  type="submit"
-                  aria-label="Search"
-                  className="min-h-[44px] rounded-full bg-mobile-primary px-8 py-2.5 text-sm font-bold text-white transition hover:bg-holidaze-blue-hover"
-                >
-                  Search
-                </button>
-                {catalog.hasActiveSearch ? (
-                  <button
-                    type="button"
-                    onClick={() => catalog.clearSearch("venues")}
-                    className="rounded-full px-4 py-1.5 text-sm font-semibold text-mobile-primary underline-offset-4 hover:underline"
-                  >
-                    Clear search
-                  </button>
-                ) : null}
-              </div>
+              <button
+                type="submit"
+                aria-label="Search"
+                className="min-h-[44px] shrink-0 rounded-full bg-mobile-primary px-8 py-2.5 text-sm font-bold text-white transition hover:bg-holidaze-blue-hover"
+              >
+                Search
+              </button>
             </form>
           </div>
         </div>
@@ -120,6 +109,15 @@ export function VenuesPage() {
             >
               {catalog.navViewSaved ? "Show all" : "Saved only"}
             </Link>
+            {catalog.hasActiveSearch ? (
+              <button
+                type="button"
+                onClick={() => catalog.clearSearch("venues")}
+                className="rounded-full px-4 py-2 text-sm font-semibold text-mobile-primary underline-offset-4 hover:underline"
+              >
+                Clear search
+              </button>
+            ) : null}
           </div>
         </div>
 
