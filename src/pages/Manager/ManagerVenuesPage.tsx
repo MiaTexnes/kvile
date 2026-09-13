@@ -98,7 +98,7 @@ function HostVenueCard({
           </Link>
           <Link
             to={`/manager/venues/${v.id}/edit`}
-            className="rounded-lg bg-brand-100 px-3 py-2 text-sm font-medium text-brand-900 hover:bg-brand-100/80"
+            className="rounded-lg border border-brand-200 bg-white px-3 py-2 text-sm font-medium text-brand-900 hover:bg-brand-50"
           >
             Edit
           </Link>
