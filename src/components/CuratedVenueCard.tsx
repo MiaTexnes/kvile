@@ -53,10 +53,11 @@ export function CuratedVenueCard({
         </button>
       </div>
       <div className="p-6">
-        <div className="mb-2 flex items-start justify-between gap-2">
+        <div className="mb-2 flex items-center justify-between gap-2">
           <Link
             to={`/venues/${venue.id}`}
-            className="text-lg font-bold text-mobile-ink hover:text-mobile-primary"
+            className="min-w-0 flex-1 truncate text-lg font-bold text-mobile-ink hover:text-mobile-primary"
+            title={venue.name}
           >
             {venue.name}
           </Link>
@@ -66,7 +67,7 @@ export function CuratedVenueCard({
               {rating.toFixed(1)}
             </span>
           ) : (
-            <span className="text-sm text-stone-400">-</span>
+            <span className="shrink-0 text-sm text-stone-400">-</span>
           )}
         </div>
         {loc || venue.owner?.name?.trim() ? (

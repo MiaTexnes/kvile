@@ -202,13 +202,28 @@ export function HomePage() {
     applySearchFromInput,
     clearSearch,
   } = useVenueCatalog({ recommendedStaysDefaults: true })
-  const HOME_PAGE_SIZE = 4
+  const HOME_PAGE_SIZE = 8
   const [visibleCount, setVisibleCount] = useState(HOME_PAGE_SIZE)
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset the 4-card window when search or filters change
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset the 8-card window when search or filters change
     setVisibleCount(HOME_PAGE_SIZE)
   }, [q, catalogSort, filterTopRated, amenityFilters, heroGuests, navViewSaved])
+
+  useEffect(() => {
+    if (loading || isFetchingNextPage) return
+    if (gridVenues.length >= visibleCount) return
+    if (!canLoadMore) return
+    fetchNextPage()
+    // fetchNextPage is recreated each render; refill until we have 8 matches
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    loading,
+    isFetchingNextPage,
+    gridVenues.length,
+    visibleCount,
+    canLoadMore,
+  ])
 
   const visibleVenues = gridVenues.slice(0, visibleCount)
   const hasMoreLocal = visibleCount < gridVenues.length
