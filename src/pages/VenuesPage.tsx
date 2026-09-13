@@ -1,4 +1,4 @@
-import { type FormEvent } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import { Link } from "react-router-dom"
 import { Alert } from "../components/Alert"
 import { CuratedVenueCard } from "../components/CuratedVenueCard"
@@ -7,13 +7,42 @@ import { VenueCatalogSortSelect } from "../components/VenueCatalogSortSelect"
 import { useDocumentTitle } from "../lib/useDocumentTitle"
 import { useVenueCatalog } from "../lib/useVenueCatalog"
 
+const VENUES_INITIAL_COUNT = 16
+const VENUES_LOAD_MORE_COUNT = 8
+
 export function VenuesPage() {
   useDocumentTitle("Venues")
   const catalog = useVenueCatalog()
+  const [visibleCount, setVisibleCount] = useState(VENUES_INITIAL_COUNT)
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset the card window when search or filters change
+    setVisibleCount(VENUES_INITIAL_COUNT)
+  }, [
+    catalog.q,
+    catalog.catalogSort,
+    catalog.filterTopRated,
+    catalog.amenityFilters,
+    catalog.guestCount,
+    catalog.navViewSaved,
+  ])
+
+  const visibleVenues = catalog.gridVenues.slice(0, visibleCount)
+  const hasMoreLocal = visibleCount < catalog.gridVenues.length
+  const showLoadMore =
+    (hasMoreLocal || catalog.canLoadMore) && !catalog.navViewSaved
 
   function onSearch(e: FormEvent) {
     e.preventDefault()
     catalog.applySearchFromInput(catalog.searchInput, { keepSavedView: true })
+  }
+
+  function onLoadMore() {
+    const next = visibleCount + VENUES_LOAD_MORE_COUNT
+    setVisibleCount(next)
+    if (next > catalog.gridVenues.length && catalog.canLoadMore) {
+      catalog.fetchNextPage()
+    }
   }
 
   return (
@@ -152,7 +181,7 @@ export function VenuesPage() {
               aria-live="polite"
               aria-busy={catalog.isFetchingNextPage}
             >
-              {catalog.gridVenues.map((v) => (
+              {visibleVenues.map((v) => (
                 <CuratedVenueCard
                   key={v.id}
                   venue={v}
@@ -161,12 +190,12 @@ export function VenuesPage() {
                 />
               ))}
             </div>
-            {catalog.canLoadMore ? (
+            {showLoadMore ? (
               <div className="mt-12 flex justify-center">
                 <button
                   type="button"
                   disabled={catalog.isFetchingNextPage}
-                  onClick={() => catalog.fetchNextPage()}
+                  onClick={onLoadMore}
                   className="rounded-full border border-stone-300 bg-white px-8 py-3 text-sm font-semibold text-mobile-ink shadow-sm transition hover:bg-stone-50 disabled:opacity-50"
                 >
                   {catalog.isFetchingNextPage ? "Loading..." : "Load more"}
