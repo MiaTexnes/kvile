@@ -202,6 +202,26 @@ export function HomePage() {
     applySearchFromInput,
     clearSearch,
   } = useVenueCatalog({ recommendedStaysDefaults: true })
+  const HOME_PAGE_SIZE = 4
+  const [visibleCount, setVisibleCount] = useState(HOME_PAGE_SIZE)
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset the 4-card window when search or filters change
+    setVisibleCount(HOME_PAGE_SIZE)
+  }, [q, catalogSort, filterTopRated, amenityFilters, heroGuests, navViewSaved])
+
+  const visibleVenues = gridVenues.slice(0, visibleCount)
+  const hasMoreLocal = visibleCount < gridVenues.length
+  const showLoadMore = (hasMoreLocal || canLoadMore) && !navViewSaved
+
+  function onLoadMore() {
+    const next = visibleCount + HOME_PAGE_SIZE
+    setVisibleCount(next)
+    if (next > gridVenues.length && canLoadMore) {
+      fetchNextPage()
+    }
+  }
+
   const mobileSearchChrome = useMobileHomeSearchChrome()
   const searchExpanded = mobileSearchChrome?.searchExpanded ?? false
   const [mobileSearchMountEl, setMobileSearchMountEl] =
@@ -422,7 +442,7 @@ export function HomePage() {
             ) : (
               <>
                 <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-                  {gridVenues.map((v) => (
+                  {visibleVenues.map((v) => (
                     <CuratedVenueCard
                       key={v.id}
                       venue={v}
@@ -431,12 +451,12 @@ export function HomePage() {
                     />
                   ))}
                 </div>
-                {canLoadMore ? (
+                {showLoadMore ? (
                   <div className="mt-10 flex justify-center">
                     <button
                       type="button"
                       disabled={isFetchingNextPage}
-                      onClick={() => fetchNextPage()}
+                      onClick={onLoadMore}
                       className="rounded-full border border-stone-300 bg-white px-8 py-3 text-sm font-semibold text-holidaze-ink shadow-sm transition hover:bg-stone-50 disabled:opacity-50"
                     >
                       {isFetchingNextPage ? "Loading..." : "Load more"}
@@ -522,7 +542,7 @@ export function HomePage() {
           ) : (
             <>
               <div className="space-y-12">
-                {gridVenues.map((v) => (
+                {visibleVenues.map((v) => (
                   <MobileFeaturedVenue
                     key={v.id}
                     venue={v}
@@ -531,12 +551,12 @@ export function HomePage() {
                   />
                 ))}
               </div>
-              {canLoadMore ? (
+              {showLoadMore ? (
                 <div className="mt-8 flex justify-center">
                   <button
                     type="button"
                     disabled={isFetchingNextPage}
-                    onClick={() => fetchNextPage()}
+                    onClick={onLoadMore}
                     className="rounded-full border border-stone-300 bg-white px-8 py-3 text-sm font-semibold shadow-sm disabled:opacity-50"
                   >
                     {isFetchingNextPage ? "Loading..." : "Load more"}
