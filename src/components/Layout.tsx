@@ -40,7 +40,7 @@ function SiteFooter({ className }: { className?: string }) {
   return (
     <footer
       className={clsx(
-        "font-manrope mt-auto flex w-full flex-col gap-6 overflow-visible border-t border-stone-200 bg-stone-50 py-8 text-sm text-on-surface-muted",
+        "font-manrope mt-auto flex w-full flex-col gap-3 overflow-visible border-t border-stone-200 bg-stone-50 py-4 text-sm text-on-surface-muted",
         className,
       )}
     >
