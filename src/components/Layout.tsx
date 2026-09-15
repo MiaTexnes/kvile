@@ -17,7 +17,7 @@ function FooterKvileBrand({ className }: { className?: string }) {
     <Link
       to="/"
       className={clsx(
-        "inline-flex items-center overflow-visible py-0 leading-none outline-none transition-opacity hover:opacity-90",
+        "pointer-events-auto inline-flex origin-center scale-[2.92] items-center px-3 py-2 leading-none outline-none transition-opacity hover:opacity-90 md:scale-[3.22]",
         className,
       )}
       aria-label="Kvile home"
@@ -26,106 +26,41 @@ function FooterKvileBrand({ className }: { className?: string }) {
         src={KVILE_LOGO_SRC}
         alt=""
         decoding="async"
-        className="pointer-events-none block h-8 w-auto max-w-[11rem] origin-center scale-[2.92] object-contain md:max-w-[12rem] md:scale-[3.22]"
+        className="block h-8 w-auto max-w-[11rem] object-contain md:max-w-[12rem]"
       />
     </Link>
   )
 }
-function SiteFooter({
-  light,
-  className,
-}: {
-  light?: boolean
-  className?: string
-}) {
-  if (light) {
-    return (
-      <footer
-        className={clsx(
-          "font-manrope mt-auto flex w-full flex-col gap-6 overflow-visible border-t border-stone-200 bg-stone-50 py-8 text-sm",
-          className,
-        )}
-      >
-        <div className="flex w-full justify-center overflow-visible px-4 md:px-12">
-          <FooterKvileBrand />
-        </div>
-        <div className="mx-auto flex min-w-0 max-w-screen-2xl flex-col items-center gap-6 px-4 md:flex-row md:items-start md:justify-between md:px-12">
-          <div className="min-w-0 text-center md:max-w-md md:text-left">
-            <p className="text-on-surface-muted">
-              © {new Date().getFullYear()} Kvile. Your Digital Sanctuary.
-            </p>
-          </div>
-          <nav className="flex flex-wrap justify-center gap-x-8 gap-y-2 md:flex-nowrap md:self-center md:justify-end md:gap-8">
-            <NavLink
-              to="/privacy"
-              className={({ isActive }) =>
-                isActive
-                  ? "text-holidaze-blue underline underline-offset-4"
-                  : "text-on-surface-muted underline underline-offset-4 transition hover:text-holidaze-blue-hover"
-              }
-            >
-              Privacy Policy
-            </NavLink>
-            <NavLink
-              to="/terms"
-              className={({ isActive }) =>
-                isActive
-                  ? "text-holidaze-blue underline underline-offset-4"
-                  : "text-on-surface-muted underline underline-offset-4 transition hover:text-holidaze-blue-hover"
-              }
-            >
-              Terms of Service
-            </NavLink>
-            <NavLink
-              to="/contact"
-              className={({ isActive }) =>
-                isActive
-                  ? "text-holidaze-blue underline underline-offset-4"
-                  : "text-on-surface-muted underline underline-offset-4 transition hover:text-holidaze-blue-hover"
-              }
-            >
-              Contact Us
-            </NavLink>
-          </nav>
-        </div>
-      </footer>
-    )
-  }
+
+function footerLinkClass({ isActive }: { isActive: boolean }) {
+  return clsx("footer-legal-link", isActive && "text-holidaze-blue")
+}
+
+function SiteFooter({ className }: { className?: string }) {
   return (
     <footer
       className={clsx(
-        "mt-auto flex w-full flex-col gap-6 overflow-visible border-t border-stone-200/80 bg-white py-10",
+        "font-manrope mt-auto flex w-full flex-col gap-6 overflow-visible border-t border-stone-200 bg-stone-50 py-8 text-sm text-on-surface-muted",
         className,
       )}
     >
-      <div className="flex w-full justify-center overflow-visible px-4 md:px-12">
+      <div className="pointer-events-none relative z-0 flex w-full justify-center overflow-visible px-4 md:px-12">
         <FooterKvileBrand />
       </div>
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-4 md:flex-row md:items-center md:justify-between md:px-6">
-        <div className="min-w-0 text-center md:max-w-xs md:text-left">
-          <p className="text-sm text-holidaze-muted">
-            Explore venues and manage your hosting.
-          </p>
-        </div>
-        <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-holidaze-muted md:flex-nowrap md:justify-end">
-          <Link
-            to="/privacy"
-            className="underline-offset-4 hover:text-holidaze-ink hover:underline"
-          >
-            Privacy
-          </Link>
-          <Link
-            to="/terms"
-            className="underline-offset-4 hover:text-holidaze-ink hover:underline"
-          >
-            Terms
-          </Link>
-          <Link
-            to="/contact"
-            className="underline-offset-4 hover:text-holidaze-ink hover:underline"
-          >
-            Contact
-          </Link>
+      <div className="relative z-10 mx-auto flex min-w-0 w-full max-w-screen-2xl flex-col items-center gap-6 px-4 md:flex-row md:items-center md:justify-between md:px-12">
+        <p className="text-center md:text-left">
+          © {new Date().getFullYear()} Kvile. Your Digital Sanctuary.
+        </p>
+        <nav className="flex flex-wrap justify-center gap-x-8 gap-y-2 md:flex-nowrap md:justify-end">
+          <NavLink to="/privacy" className={footerLinkClass}>
+            Privacy Policy
+          </NavLink>
+          <NavLink to="/terms" className={footerLinkClass}>
+            Terms of Service
+          </NavLink>
+          <NavLink to="/contact" className={footerLinkClass}>
+            Contact Us
+          </NavLink>
         </nav>
       </div>
     </footer>
@@ -190,7 +125,6 @@ export function Layout() {
           </Suspense>
         </main>
         <SiteFooter
-          light={isHome}
           className={clsx(
             isHome && "hidden md:block",
             !isHome && dockPadMobile && MOBILE_DOCK_BOTTOM_PAD,
