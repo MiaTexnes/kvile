@@ -1,5 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import {
   compareDesc,
   endOfDay,
@@ -24,6 +29,7 @@ import {
   isUnavailableBookedNight,
   rangeOverlapsBooking,
 } from "../../lib/availability"
+import { hostProfileHref } from "../../lib/hostProfilePath"
 import { isManagersOwnBookingBlock } from "../../lib/managerVenueBooking"
 import { useDocumentTitle } from "../../lib/useDocumentTitle"
 import { isCurrentUserVenueOwner } from "../../lib/managerOwnership"
@@ -37,12 +43,59 @@ const blockFormSchema = z.object({
 
 type BlockForm = z.infer<typeof blockFormSchema>
 
+const hostLinkClassName =
+  "font-semibold text-brand-600 underline underline-offset-2 hover:text-brand-950"
+
 // Initials when the guest has no avatar URL
 function guestInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
   if (parts.length >= 2) return (parts[0]![0]! + parts[1]![0]!).toUpperCase()
   if (parts[0]?.length) return parts[0]!.slice(0, 2).toUpperCase()
   return "?"
+}
+
+function GuestAvatar({
+  name,
+  avatarUrl,
+  href,
+}: {
+  name: string
+  avatarUrl?: string
+  href?: string
+}) {
+  const photo = avatarUrl ? (
+    <img
+      src={avatarUrl}
+      alt={`${name} profile photo`}
+      className="size-14 shrink-0 rounded-full object-cover"
+    />
+  ) : (
+    <div
+      className="flex size-14 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-900"
+      aria-hidden
+    >
+      {guestInitials(name)}
+    </div>
+  )
+
+  return (
+    <div className="flex shrink-0 items-start gap-1">
+      {href ? (
+        <Link
+          to={href}
+          className="rounded-full outline-none ring-brand-500/30 hover:opacity-90 focus-visible:ring-2"
+          aria-label={`View host profile for ${name}`}
+        >
+          {photo}
+        </Link>
+      ) : (
+        photo
+      )}
+      {!avatarUrl ? (
+        <span className="sr-only">{name} (no avatar image)</span>
+      ) : null}
+    </div>
+  )
 }
 
 export function ManagerVenueBookingsPage() {
@@ -134,6 +187,44 @@ export function ManagerVenueBookingsPage() {
     },
   })
 
+  const managerEmailsForHolds = useMemo(
+    () =>
+      [user?.profileEmail, user?.email]
+        .map((e) => e?.trim())
+        .filter((e): e is string => Boolean(e)),
+    [user?.profileEmail, user?.email],
+  )
+
+  // Unique guests (not our own date holds). Profile fetch tells us who is a host.
+  const guestNames = useMemo(() => {
+    const names = new Set<string>()
+    for (const b of bookings) {
+      const isHold = managerEmailsForHolds.some((em) =>
+        isManagersOwnBookingBlock(b, em),
+      )
+      const name = b.customer?.name?.trim()
+      if (!isHold && name) names.add(name)
+    }
+    return [...names]
+  }, [bookings, managerEmailsForHolds])
+
+  const guestProfileQueries = useQueries({
+    queries: guestNames.map((name) => ({
+      queryKey: ["profile", "guest", name] as const,
+      queryFn: () => api.fetchProfile(user!.accessToken, name),
+      enabled: Boolean(user?.accessToken),
+      staleTime: 60_000,
+    })),
+  })
+
+  const guestIsHostByName = useMemo(() => {
+    const map = new Map<string, boolean>()
+    guestNames.forEach((name, i) => {
+      map.set(name, guestProfileQueries[i]?.data?.venueManager === true)
+    })
+    return map
+  }, [guestNames, guestProfileQueries])
+
   useDocumentTitle(venue?.name ? `Bookings · ${venue.name}` : "Venue bookings")
 
   if (!id) {
@@ -166,9 +257,6 @@ export function ManagerVenueBookingsPage() {
   }
 
   const cover = venue.media?.[0]
-  const managerEmailsForHolds = [user?.profileEmail, user?.email]
-    .map((e) => e?.trim())
-    .filter((e): e is string => Boolean(e))
 
   return (
     <div className="space-y-10">
@@ -351,6 +439,10 @@ export function ManagerVenueBookingsPage() {
             const isOwnHold = managerEmailsForHolds.some((em) =>
               isManagersOwnBookingBlock(b, em),
             )
+            const hostHref =
+              !isOwnHold && guestIsHostByName.get(custName.trim())
+                ? hostProfileHref(custName)
+                : undefined
             return (
               <li
                 key={b.id}
@@ -369,27 +461,11 @@ export function ManagerVenueBookingsPage() {
                     </div>
                   )}
                 </div>
-                <div className="flex shrink-0 items-start gap-1">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt={`${custName} profile photo`}
-                      className="size-14 shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div
-                      className="flex size-14 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-900"
-                      aria-hidden
-                    >
-                      {guestInitials(custName)}
-                    </div>
-                  )}
-                  {!avatarUrl ? (
-                    <span className="sr-only">
-                      {custName} (no avatar image)
-                    </span>
-                  ) : null}
-                </div>
+                <GuestAvatar
+                  name={custName}
+                  avatarUrl={avatarUrl}
+                  href={hostHref}
+                />
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-brand-950">
                     <time dateTime={b.dateFrom}>
@@ -420,7 +496,14 @@ export function ManagerVenueBookingsPage() {
                   ) : null}
                   {!isOwnHold && b.customer ? (
                     <p className="mt-2 text-sm text-brand-800">
-                      Guest: <strong>{b.customer.name}</strong>
+                      Guest:{" "}
+                      {hostHref ? (
+                        <Link to={hostHref} className={hostLinkClassName}>
+                          {b.customer.name}
+                        </Link>
+                      ) : (
+                        <strong>{b.customer.name}</strong>
+                      )}
                       {b.customer.email ? ` (${b.customer.email})` : null}
                     </p>
                   ) : null}

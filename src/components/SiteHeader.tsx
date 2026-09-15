@@ -97,19 +97,33 @@ export function SiteHeader({
         <div className="order-2 flex min-w-0 shrink-0 items-center gap-2 md:order-none md:gap-4">
           {user ? (
             <>
-              <Link
+              <NavLink
                 to="/my-bookings"
-                className="hidden rounded-full px-3 py-2 text-sm font-medium text-stone-600 hover:text-holidaze-blue sm:inline"
+                className={({ isActive }) =>
+                  clsx(
+                    "hidden pb-1 text-sm font-semibold sm:inline",
+                    isActive
+                      ? "border-b-2 border-mobile-primary text-mobile-primary"
+                      : "border-b-2 border-transparent text-stone-600 hover:text-holidaze-blue",
+                  )
+                }
               >
                 My bookings
-              </Link>
+              </NavLink>
               {user.venueManager ? (
-                <Link
+                <NavLink
                   to="/manager/venues"
-                  className="hidden rounded-full px-3 py-2 text-sm font-medium text-stone-600 hover:text-holidaze-blue sm:inline"
+                  className={({ isActive }) =>
+                    clsx(
+                      "hidden pb-1 text-sm font-semibold sm:inline",
+                      isActive
+                        ? "border-b-2 border-mobile-primary text-mobile-primary"
+                        : "border-b-2 border-transparent text-stone-600 hover:text-holidaze-blue",
+                    )
+                  }
                 >
                   My venues
-                </Link>
+                </NavLink>
               ) : null}
               <Link
                 to="/profile"

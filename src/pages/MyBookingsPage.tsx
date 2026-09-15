@@ -13,10 +13,12 @@ function BookingTripCard({ booking: b }: { booking: Booking }) {
   const venueName = b.venue?.name ?? "Venue"
   const fromLabel = format(parseISO(b.dateFrom), "PP")
   const toLabel = format(parseISO(b.dateTo), "PP")
+  const ownerName = b.venue?.owner?.name?.trim()
+  const price = b.venue?.price
 
   const cardInner = (
     <>
-      <div>
+      <div className="min-w-0">
         <h3 className="font-display text-lg font-semibold text-brand-950">
           {venueName}
         </h3>
@@ -25,25 +27,50 @@ function BookingTripCard({ booking: b }: { booking: Booking }) {
         </p>
         <p className="text-sm text-brand-800/80">{b.guests} guest(s)</p>
       </div>
-      {b.venue?.media?.[0] ? (
-        <img
-          src={b.venue.media[0].url}
-          alt=""
-          className="size-20 shrink-0 rounded-lg object-cover"
-        />
-      ) : null}
+      <div className="px-2 text-center">
+        {price != null ? (
+          <p className="text-lg font-semibold tabular-nums text-brand-950">
+            {price}
+            <span className="text-sm font-medium text-brand-800/80">
+              {" "}
+              / night
+            </span>
+          </p>
+        ) : null}
+        {ownerName ? (
+          <p className="text-sm text-brand-800/80">Hosted by {ownerName}</p>
+        ) : null}
+      </div>
+      <div className="justify-self-end">
+        {b.venue?.media?.[0] ? (
+          <img
+            src={b.venue.media[0].url}
+            alt=""
+            className="size-20 shrink-0 rounded-lg object-cover"
+          />
+        ) : null}
+      </div>
     </>
   )
 
   const shellClass =
-    "shadow-elevate flex flex-wrap items-start justify-between gap-2 rounded-2xl border border-stone-200/90 bg-white p-5"
+    "shadow-elevate grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 rounded-2xl border border-stone-200/90 bg-white p-5"
+
+  const ariaBits = [
+    `View venue ${venueName}.`,
+    `Check-in ${fromLabel}, check-out ${toLabel}, ${b.guests} guest(s).`,
+    price != null ? `${price} per night.` : null,
+    ownerName ? `Hosted by ${ownerName}.` : null,
+  ]
+    .filter(Boolean)
+    .join(" ")
 
   return (
     <li>
       {venueId ? (
         <Link
           to={`/venues/${venueId}`}
-          aria-label={`View venue ${venueName}. Check-in ${fromLabel}, check-out ${toLabel}, ${b.guests} guest(s).`}
+          aria-label={ariaBits}
           className={`${shellClass} outline-none transition hover:border-brand-400/70 hover:bg-brand-50/40 focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2`}
         >
           {cardInner}
