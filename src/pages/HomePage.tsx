@@ -92,8 +92,8 @@ function MobileFeaturedVenue({
   const rating = venue.rating ?? null
 
   return (
-    <div className="relative space-y-4">
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[24px] shadow-sm">
+    <article className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white shadow-card">
+      <div className="relative aspect-[4/5] w-full overflow-hidden">
         <Link
           to={`/venues/${venue.id}`}
           className="block h-full w-full bg-stone-100"
@@ -125,7 +125,7 @@ function MobileFeaturedVenue({
           />
         </button>
       </div>
-      <div className="flex items-start justify-between gap-3 px-2">
+      <div className="flex items-start justify-between gap-3 p-6">
         <div>
           <Link
             to={`/venues/${venue.id}`}
@@ -168,7 +168,7 @@ function MobileFeaturedVenue({
           ) : null}
         </div>
       </div>
-    </div>
+    </article>
   )
 }
 
@@ -300,7 +300,7 @@ export function HomePage() {
             <img
               src="/hero-image.png"
               alt=""
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover object-center"
             />
             <div
               className="hero-gradient-surface absolute inset-0"
@@ -312,7 +312,7 @@ export function HomePage() {
             <h1 className="mb-16 text-balance font-marketing-display text-5xl font-semibold leading-[1.12] tracking-normal antialiased text-mobile-ink sm:text-6xl md:mb-20 md:text-7xl md:leading-[1.1] md:tracking-tight lg:text-8xl">
               Find Your Place
               <br />
-              of Peace
+              Of Peace
             </h1>
 
             <form
@@ -469,35 +469,26 @@ export function HomePage() {
         </section>
       </div>
 
-      {/* Mobile home: full-width hero. object-bottom trims the photo from the top (desktop focal point unchanged). */}
+      {/* Mobile home: full-width hero, flush under the header. */}
       <div className="bg-mobile-surface font-manrope text-mobile-ink md:hidden">
-        <section className="relative isolate flex min-h-[min(520px,78svh)] w-full flex-col justify-end overflow-hidden">
-          <div className="absolute inset-0 overflow-hidden">
-            <img
-              src="/hero-image.png"
-              alt=""
-              className="h-full w-full object-cover object-bottom"
-            />
-            <div
-              className="hero-gradient-surface-mobile absolute inset-0"
-              aria-hidden
-            />
-          </div>
-
-          <div className="relative z-10 w-full px-6 pb-8 pt-[max(1rem,calc(env(safe-area-inset-top)+3.5rem))]">
-            <div className="text-center">
-              <h1 className="text-balance font-marketing-display text-5xl font-semibold leading-[1.12] tracking-normal antialiased text-mobile-ink sm:text-6xl">
-                Find Your Place
-                <br />
-                of Peace
-              </h1>
-            </div>
+        <section className="relative isolate w-full overflow-hidden pt-[calc(2.75rem+env(safe-area-inset-top))]">
+          <img src="/hero-image.png" alt="" className="block h-auto w-full" />
+          <div
+            className="hero-gradient-surface-mobile absolute inset-0"
+            aria-hidden
+          />
+          <div className="absolute inset-0 z-10 flex items-center justify-center px-6 pt-[calc(2.75rem+env(safe-area-inset-top))]">
+            <h1 className="text-center text-balance font-marketing-display text-4xl font-semibold leading-[1.12] tracking-normal antialiased text-mobile-ink sm:text-5xl">
+              Find Your Place
+              <br />
+              Of Peace
+            </h1>
           </div>
         </section>
 
         <section
           data-mobile-venues
-          className="mt-12 scroll-mt-32 space-y-6 px-6 pb-8"
+          className="mt-12 scroll-mt-32 space-y-6 bg-surface-sheet px-6 py-8"
         >
           <h3 className="text-xl font-bold tracking-tight text-mobile-ink">
             {navViewSaved ? "Saved stays" : "Recommended stays"}
