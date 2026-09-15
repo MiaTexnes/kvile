@@ -124,12 +124,7 @@ export function Layout() {
             <Outlet />
           </Suspense>
         </main>
-        <SiteFooter
-          className={clsx(
-            isHome && "hidden md:block",
-            !isHome && dockPadMobile && MOBILE_DOCK_BOTTOM_PAD,
-          )}
-        />
+        <SiteFooter className={clsx(dockPadMobile && MOBILE_DOCK_BOTTOM_PAD)} />
       </div>
     </MobileHomeSearchChromeContext.Provider>
   )
