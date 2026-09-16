@@ -8,10 +8,6 @@ import { KVILE_LOGO_SRC } from "./KvileLogo"
 import { SiteHeader } from "./SiteHeader"
 import { SkipLink } from "./SkipLink"
 
-// Room for the fixed bottom dock + home indicator on phones
-const MOBILE_DOCK_BOTTOM_PAD =
-  "max-md:pb-[calc(7.5rem+env(safe-area-inset-bottom))]"
-
 function FooterKvileBrand({ className }: { className?: string }) {
   return (
     <Link
@@ -70,8 +66,6 @@ function SiteFooter({ className }: { className?: string }) {
 export function Layout() {
   const { pathname } = useLocation()
   const isHome = pathname === "/"
-  const isManager = pathname.startsWith("/manager")
-  const dockPadMobile = !isManager
   const [mobileSearchExpanded, setMobileSearchExpanded] = useState(false)
 
   return (
@@ -94,7 +88,7 @@ export function Layout() {
           className="hidden md:block"
         />
         <div className="md:hidden">
-          <MobileShell dockVisible={!isManager} />
+          <MobileShell />
         </div>
         <main
           id="main-content"
@@ -103,14 +97,11 @@ export function Layout() {
           className={clsx(
             "flex-1 outline-none",
             isHome
-              ? clsx(
-                  "w-full px-0 pt-0",
-                  dockPadMobile && MOBILE_DOCK_BOTTOM_PAD,
-                )
+              ? "w-full px-0 pt-0"
               : clsx(
                   "mx-auto w-full max-w-6xl px-4 py-8 md:px-6 md:py-10",
                   "max-md:pt-[calc(2.75rem+env(safe-area-inset-top))]",
-                  dockPadMobile ? MOBILE_DOCK_BOTTOM_PAD : "max-md:pb-10",
+                  "max-md:pb-10",
                 ),
           )}
         >
@@ -124,7 +115,7 @@ export function Layout() {
             <Outlet />
           </Suspense>
         </main>
-        <SiteFooter className={clsx(dockPadMobile && MOBILE_DOCK_BOTTOM_PAD)} />
+        <SiteFooter />
       </div>
     </MobileHomeSearchChromeContext.Provider>
   )
