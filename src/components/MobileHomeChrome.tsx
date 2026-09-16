@@ -2,17 +2,7 @@ import clsx from "clsx"
 import { useEffect, useId, useRef, useState } from "react"
 import { Link, NavLink, useLocation } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
-import {
-  IconClose,
-  IconExplore,
-  IconHeart,
-  IconLogOut,
-  IconLuggage,
-  IconMenu,
-  IconPin,
-  IconSearch,
-  IconUser,
-} from "./Icons"
+import { IconClose, IconLogOut, IconMenu, IconSearch, IconUser } from "./Icons"
 import { KvileLogo } from "./KvileLogo"
 import { useMobileHomeSearchChrome } from "./mobileHomeSearchChrome"
 
@@ -23,8 +13,14 @@ function initials(name: string) {
   return (a + b).toUpperCase()
 }
 
-const dockItem =
-  "flex min-h-[3rem] flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-2 text-[11px] font-semibold leading-tight tracking-tight transition-colors active:scale-[0.98] font-manrope"
+function sheetLinkClass(isActive: boolean) {
+  return clsx(
+    "flex min-h-12 items-center rounded-xl px-3 text-[15px] font-semibold",
+    isActive
+      ? "bg-mobile-primary/10 text-mobile-primary"
+      : "text-brand-950 hover:bg-stone-50",
+  )
+}
 
 type MobileNavDialogProps = {
   dialogRef: React.RefObject<HTMLDialogElement | null>
@@ -34,6 +30,7 @@ function MobileNavDialog({ dialogRef }: MobileNavDialogProps) {
   const titleId = useId()
   const { pathname, search, hash } = useLocation()
   const { user, logout } = useAuth()
+  const viewSaved = new URLSearchParams(search).get("view") === "saved"
 
   useEffect(() => {
     dialogRef.current?.close()
@@ -48,76 +45,79 @@ function MobileNavDialog({ dialogRef }: MobileNavDialogProps) {
       ref={dialogRef}
       id="kvile-mobile-menu"
       className={clsx(
-        /* In-flow flex layout: absolute-only children collapse <dialog> to ~0x0, so the sheet never paints. */
-        "fixed inset-0 z-[70] m-0 flex h-[100dvh] w-full max-w-none flex-col justify-start border-none bg-transparent p-0",
-        "[&::backdrop]:bg-black/40",
+        "fixed inset-x-0 bottom-0 z-[60] m-0 flex w-full max-w-none flex-col justify-start border-none bg-transparent p-0",
+        "top-[calc(2.75rem+env(safe-area-inset-top))]",
+        "h-[calc(100dvh-2.75rem-env(safe-area-inset-top))]",
       )}
       aria-labelledby={titleId}
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) {
-          closeSheet()
-        }
-      }}
       onCancel={(e) => {
         e.preventDefault()
         closeSheet()
       }}
     >
+      <h2 id={titleId} className="sr-only">
+        Menu
+      </h2>
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/40"
+        aria-label="Close menu"
+        onClick={closeSheet}
+      />
       <div
         className={clsx(
-          "flex max-h-[min(85vh,calc(100dvh-env(safe-area-inset-bottom)))] w-full shrink-0 flex-col",
-          "rounded-b-3xl border border-stone-200/80 border-t-0 bg-white shadow-[0_12px_40px_rgba(0,0,0,0.12)] outline-none",
+          "relative z-10 flex max-h-[min(85vh,100%)] w-full shrink-0 flex-col",
+          "rounded-b-3xl border border-t-0 border-stone-200/80 bg-white shadow-[0_12px_40px_rgba(0,0,0,0.12)] outline-none",
         )}
       >
-        {/* Same row geometry as MobileTopBar so the close control sits where the hamburger does */}
-        <div className="shrink-0 border-b border-stone-100 pt-[env(safe-area-inset-top)]">
-          <h2 id={titleId} className="sr-only">
-            Menu
-          </h2>
-          <div className="relative flex h-11 items-center justify-between gap-2 px-3">
-            <Link
-              to="/"
-              onClick={closeSheet}
-              className="relative z-10 flex min-w-0 max-w-[min(100%,18rem)] shrink items-center overflow-visible transition-opacity active:opacity-80"
-            >
-              <KvileLogo className="max-w-full" />
-            </Link>
-            <div className="flex shrink-0 items-center gap-0.5">
-              <button
-                type="button"
-                onClick={closeSheet}
-                className="flex size-9 items-center justify-center rounded-full text-on-surface-muted transition hover:bg-black/[0.06]"
-                aria-label="Close menu"
-              >
-                <IconClose className="size-[22px]" />
-              </button>
-              <span
-                className="size-9 shrink-0 rounded-full border-2 border-transparent"
-                aria-hidden="true"
-              />
-            </div>
-          </div>
-        </div>
-
         <nav
-          aria-label="More destinations"
+          aria-label="Primary"
           className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-2"
         >
           <ul className="divide-y divide-stone-100">
             <li>
               <NavLink
-                to="/venues"
+                to="/"
+                end
                 onClick={closeSheet}
                 className={({ isActive }) =>
-                  clsx(
-                    "flex min-h-12 items-center rounded-xl px-3 text-[15px] font-semibold",
-                    isActive
-                      ? "bg-mobile-primary/10 text-mobile-primary"
-                      : "text-brand-950 hover:bg-stone-50",
+                  sheetLinkClass(isActive && !viewSaved)
+                }
+              >
+                Home
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/venues"
+                onClick={closeSheet}
+                className={() =>
+                  sheetLinkClass(
+                    (pathname === "/venues" ||
+                      pathname.startsWith("/venues/")) &&
+                      !viewSaved,
                   )
                 }
               >
-                All venues
+                Venues
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/venues?view=saved"
+                onClick={closeSheet}
+                className={() => sheetLinkClass(viewSaved)}
+              >
+                Saved
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/my-bookings"
+                onClick={closeSheet}
+                className={({ isActive }) => sheetLinkClass(isActive)}
+              >
+                My bookings
               </NavLink>
             </li>
             <li>
@@ -135,7 +135,7 @@ function MobileNavDialog({ dialogRef }: MobileNavDialogProps) {
                     )
                   }
                 }}
-                className="flex min-h-12 items-center rounded-xl px-3 text-[15px] font-semibold text-brand-950 hover:bg-stone-50"
+                className={sheetLinkClass(false)}
               >
                 About
               </Link>
@@ -144,14 +144,7 @@ function MobileNavDialog({ dialogRef }: MobileNavDialogProps) {
               <NavLink
                 to="/contact"
                 onClick={closeSheet}
-                className={({ isActive }) =>
-                  clsx(
-                    "flex min-h-12 items-center rounded-xl px-3 text-[15px] font-semibold",
-                    isActive
-                      ? "bg-mobile-primary/10 text-mobile-primary"
-                      : "text-brand-950 hover:bg-stone-50",
-                  )
-                }
+                className={({ isActive }) => sheetLinkClass(isActive)}
               >
                 Contact
               </NavLink>
@@ -161,14 +154,7 @@ function MobileNavDialog({ dialogRef }: MobileNavDialogProps) {
                 <NavLink
                   to="/register"
                   onClick={closeSheet}
-                  className={({ isActive }) =>
-                    clsx(
-                      "flex min-h-12 items-center rounded-xl px-3 text-[15px] font-semibold",
-                      isActive
-                        ? "bg-mobile-primary/10 text-mobile-primary"
-                        : "text-brand-950 hover:bg-stone-50",
-                    )
-                  }
+                  className={({ isActive }) => sheetLinkClass(isActive)}
                 >
                   Register
                 </NavLink>
@@ -179,14 +165,7 @@ function MobileNavDialog({ dialogRef }: MobileNavDialogProps) {
                 <NavLink
                   to="/manager/venues"
                   onClick={closeSheet}
-                  className={({ isActive }) =>
-                    clsx(
-                      "flex min-h-12 items-center rounded-xl px-3 text-[15px] font-semibold",
-                      isActive
-                        ? "bg-mobile-primary/10 text-mobile-primary"
-                        : "text-brand-950 hover:bg-stone-50",
-                    )
-                  }
+                  className={({ isActive }) => sheetLinkClass(isActive)}
                 >
                   My venues
                 </NavLink>
@@ -291,9 +270,13 @@ function MobileTopBar({
             aria-expanded={menuOpen}
             aria-controls="kvile-mobile-menu"
             aria-haspopup="dialog"
-            aria-label="Open menu"
+            aria-label={menuOpen ? "Close menu" : "Menu"}
           >
-            <IconMenu className="size-[22px]" />
+            {menuOpen ? (
+              <IconClose className="size-[22px]" />
+            ) : (
+              <IconMenu className="size-[22px]" />
+            )}
           </button>
           <Link
             to={user ? "/profile" : "/login"}
@@ -346,86 +329,7 @@ function MobileTopBar({
   )
 }
 
-function MobileBottomDock() {
-  const { pathname, search } = useLocation()
-  const viewSaved = new URLSearchParams(search).get("view") === "saved"
-  const exploreActive = pathname === "/" && !viewSaved
-  const venuesTabActive =
-    pathname.startsWith("/venues/") || (pathname === "/venues" && !viewSaved)
-  const tripsActive = pathname === "/my-bookings"
-
-  return (
-    <nav
-      className={clsx(
-        "pointer-events-none fixed bottom-0 left-0 right-0 z-[65] pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden",
-      )}
-      aria-label="Primary"
-    >
-      <div className="pointer-events-auto mx-3 mb-3 flex rounded-2xl border border-stone-200/80 bg-white/90 p-1.5 shadow-lg shadow-stone-900/[0.08] backdrop-blur-xl supports-[backdrop-filter]:bg-white/85">
-        <NavLink
-          to="/"
-          end
-          className={() =>
-            clsx(
-              dockItem,
-              exploreActive
-                ? "bg-mobile-primary text-white shadow-inner"
-                : "text-on-surface-muted hover:bg-stone-100",
-            )
-          }
-        >
-          <IconExplore className="size-[22px]" />
-          Explore
-        </NavLink>
-        <NavLink
-          to="/venues?view=saved"
-          className={() =>
-            clsx(
-              dockItem,
-              viewSaved
-                ? "bg-mobile-primary text-white shadow-inner"
-                : "text-on-surface-muted hover:bg-stone-100",
-            )
-          }
-        >
-          <IconHeart className="size-[22px]" filled={viewSaved} />
-          Saved
-        </NavLink>
-        <NavLink
-          to="/my-bookings"
-          className={() =>
-            clsx(
-              dockItem,
-              tripsActive
-                ? "bg-mobile-primary text-white shadow-inner"
-                : "text-on-surface-muted hover:bg-stone-100",
-            )
-          }
-        >
-          <IconLuggage className="size-[22px]" />
-          Trips
-        </NavLink>
-        <NavLink
-          to="/venues"
-          className={() =>
-            clsx(
-              dockItem,
-              venuesTabActive
-                ? "bg-mobile-primary text-white shadow-inner"
-                : "text-on-surface-muted hover:bg-stone-100",
-            )
-          }
-        >
-          <IconPin className="size-[22px]" />
-          Venues
-        </NavLink>
-      </div>
-    </nav>
-  )
-}
-
-// Top bar + bottom dock; hamburger opens the sheet
-export function MobileShell({ dockVisible = true }: { dockVisible?: boolean }) {
+export function MobileShell() {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const mobileSearchChrome = useMobileHomeSearchChrome()
@@ -453,7 +357,8 @@ export function MobileShell({ dockVisible = true }: { dockVisible?: boolean }) {
       el.close()
       return
     }
-    el.showModal()
+    setSearchExpanded(false)
+    el.show()
   }
 
   return (
@@ -465,7 +370,6 @@ export function MobileShell({ dockVisible = true }: { dockVisible?: boolean }) {
         onSearchExpandedChange={setSearchExpanded}
       />
       <MobileNavDialog dialogRef={dialogRef} />
-      {dockVisible ? <MobileBottomDock /> : null}
     </>
   )
 }
