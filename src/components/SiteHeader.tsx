@@ -1,6 +1,9 @@
+import { useState } from "react"
 import { Link, NavLink, useLocation } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query"
 import clsx from "clsx"
 import { useAuth } from "../context/AuthContext"
+import * as api from "../lib/api"
 import { IconUser } from "./Icons"
 import { KvileLogo } from "./KvileLogo"
 
@@ -14,6 +17,14 @@ export function SiteHeader({
   className?: string
 }) {
   const { user, logout } = useAuth()
+  const profileQuery = useQuery({
+    queryKey: ["profile", "me", user?.name ?? ""],
+    queryFn: () => api.fetchProfile(user!.accessToken, user!.name),
+    enabled: Boolean(user?.accessToken && user?.name),
+  })
+  const avatarUrl = profileQuery.data?.avatar?.url?.trim() ?? ""
+  const [brokenAvatarUrl, setBrokenAvatarUrl] = useState("")
+  const avatarBroken = brokenAvatarUrl === avatarUrl
   const { pathname, search, hash } = useLocation()
   const viewSaved = new URLSearchParams(search).get("view") === "saved"
   const exploreActive = pathname === "/" && !viewSaved
@@ -34,22 +45,19 @@ export function SiteHeader({
     >
       <div
         className={clsx(
-          "font-manrope mx-auto flex max-w-screen-2xl flex-wrap items-center justify-between gap-2 px-3 py-1.5 tracking-tight md:gap-6 md:px-10 md:py-2",
-          !isOverlay && "md:flex-nowrap",
+          "font-manrope mx-auto flex max-w-screen-2xl flex-nowrap items-center justify-between gap-6 px-10 py-2 tracking-tight",
         )}
       >
         <Link
           to="/"
-          className="relative z-10 order-1 flex shrink-0 items-center overflow-visible outline-none transition-opacity hover:opacity-90 md:order-none"
+          className="relative z-10 flex shrink-0 items-center overflow-visible outline-none transition-opacity hover:opacity-90"
         >
           <KvileLogo />
         </Link>
 
         <nav
           aria-label="Primary"
-          className={clsx(
-            "order-3 flex w-full basis-full items-center justify-center gap-6 border-t border-stone-200/60 py-1.5 md:order-none md:flex md:w-auto md:basis-auto md:gap-8 md:border-t-0 md:py-0",
-          )}
+          className="flex items-center justify-center gap-8"
         >
           <NavLink
             to="/"
@@ -94,7 +102,7 @@ export function SiteHeader({
           </Link>
         </nav>
 
-        <div className="order-2 flex min-w-0 shrink-0 items-center gap-2 md:order-none md:gap-4">
+        <div className="flex min-w-0 shrink-0 items-center gap-4">
           {user ? (
             <>
               <NavLink
@@ -136,7 +144,18 @@ export function SiteHeader({
                 title={`Signed in as ${user.name}. Open your profile.`}
                 aria-label={`Your profile, signed in as ${user.name}`}
               >
-                <IconUser className="size-[18px] shrink-0 text-mobile-primary" />
+                <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-mobile-primary/30 bg-white">
+                  {avatarUrl && !avatarBroken ? (
+                    <img
+                      src={avatarUrl}
+                      alt=""
+                      className="size-full object-cover"
+                      onError={() => setBrokenAvatarUrl(avatarUrl)}
+                    />
+                  ) : (
+                    <IconUser className="size-[18px] text-mobile-primary" />
+                  )}
+                </span>
                 <span className="flex min-w-0 flex-col leading-tight font-manrope">
                   <span className="text-[10px] font-semibold uppercase tracking-wide text-on-surface-muted">
                     Signed in

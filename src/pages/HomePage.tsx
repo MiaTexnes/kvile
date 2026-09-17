@@ -310,7 +310,7 @@ export function HomePage() {
             mobileSearchMountEl,
           )
         : null}
-      <div className="hidden bg-mobile-surface font-manrope text-mobile-ink md:block">
+      <div className="hidden bg-mobile-surface font-manrope text-mobile-ink nav:block">
         <section className="relative flex h-[min(921px,100svh)] w-full flex-col items-center justify-center pt-24">
           <div className="absolute inset-0 z-0 overflow-hidden">
             <img
@@ -457,7 +457,7 @@ export function HomePage() {
               </p>
             ) : (
               <>
-                <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+                <div className="mt-12 grid grid-cols-1 gap-8 nav:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {visibleVenues.map((v) => (
                     <CuratedVenueCard
                       key={v.id}
@@ -486,7 +486,7 @@ export function HomePage() {
       </div>
 
       {/* Mobile home: full-width hero, flush under the header. */}
-      <div className="bg-mobile-surface font-manrope text-mobile-ink md:hidden">
+      <div className="bg-mobile-surface font-manrope text-mobile-ink nav:hidden">
         <section className="relative isolate w-full overflow-hidden pt-[calc(2.75rem+env(safe-area-inset-top))]">
           <img src="/hero-image.png" alt="" className="block h-auto w-full" />
           <div
