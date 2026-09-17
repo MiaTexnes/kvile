@@ -85,9 +85,9 @@ export function Layout() {
         <SkipLink />
         <SiteHeader
           variant={isHome ? "overlay" : "solid"}
-          className="hidden md:block"
+          className="hidden nav:block"
         />
-        <div className="md:hidden">
+        <div className="nav:hidden">
           <MobileShell />
         </div>
         <main
@@ -100,8 +100,8 @@ export function Layout() {
               ? "w-full px-0 pt-0"
               : clsx(
                   "mx-auto w-full max-w-6xl px-4 py-8 md:px-6 md:py-10",
-                  "max-md:pt-[calc(2.75rem+env(safe-area-inset-top))]",
-                  "max-md:pb-10",
+                  "max-nav:pt-[calc(2.75rem+env(safe-area-inset-top))]",
+                  "max-nav:pb-10",
                 ),
           )}
         >
