@@ -18,6 +18,7 @@ import {
 import { hostProfileHref } from "../lib/hostProfilePath"
 import type { Booking, Venue } from "../lib/types"
 import { useDocumentTitle } from "../lib/useDocumentTitle"
+import { formatPrice } from "../lib/formatPrice"
 
 const bookingSchema = z.object({
   guests: z
@@ -252,7 +253,7 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
                   Price
                 </dt>
                 <dd className="mt-1 text-lg font-semibold tabular-nums text-mobile-ink">
-                  {venue.price}
+                  {formatPrice(venue.price)}
                   <span className="text-sm font-medium text-on-surface-muted">
                     {" "}
                     / night
