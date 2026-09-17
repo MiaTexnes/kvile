@@ -23,6 +23,7 @@ import { hostProfileHref } from "../lib/hostProfilePath"
 import { useDocumentTitle } from "../lib/useDocumentTitle"
 import type { Venue } from "../lib/types"
 import { useVenueCatalog } from "../lib/useVenueCatalog"
+import { formatPrice } from "../lib/formatPrice"
 
 function MobileHomeSearchFormInHeader({
   heroSearchInput,
@@ -153,7 +154,7 @@ function MobileFeaturedVenue({
         </div>
         <div className="text-right">
           <p className="text-xl font-black text-mobile-primary">
-            {venue.price}
+            {formatPrice(venue.price)}
             <span className="text-xs font-medium text-on-surface-muted">
               /night
             </span>

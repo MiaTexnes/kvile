@@ -16,6 +16,7 @@ import {
 import type { Venue } from "../../lib/types"
 import { useDocumentTitle } from "../../lib/useDocumentTitle"
 import { sortVenuesNewestFirst } from "../../lib/venueCatalogSort"
+import { formatPrice } from "../../lib/formatPrice"
 
 function HostVenueCard({
   venue: v,
@@ -35,7 +36,7 @@ function HostVenueCard({
   const blurb = truncateText(v.description, 140)
   const recentGuestBookings = guestBookingsForVenueCard(v, managerEmails, 6)
   const priceLine = [
-    `${v.price}/night`,
+    `${formatPrice(v.price)}/night`,
     `up to ${v.maxGuests} guests`,
     ratingLabel ? `★ ${ratingLabel}` : null,
   ]

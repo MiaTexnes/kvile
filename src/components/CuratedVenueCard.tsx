@@ -2,6 +2,7 @@ import { Link } from "react-router-dom"
 import type { Venue } from "../lib/types"
 import { hostProfileHref } from "../lib/hostProfilePath"
 import { IconHeart } from "./Icons"
+import { formatPrice } from "../lib/formatPrice"
 
 export function CuratedVenueCard({
   venue,
@@ -94,7 +95,7 @@ export function CuratedVenueCard({
             </p>
             <p className="mt-0.5">
               <span className="text-xl font-bold text-mobile-primary tabular-nums">
-                {venue.price}
+                {formatPrice(venue.price)}
               </span>
               <span className="text-sm font-medium text-on-surface-muted">
                 {" "}

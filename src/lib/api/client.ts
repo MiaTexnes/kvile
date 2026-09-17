@@ -46,6 +46,32 @@ async function parseErrorMessage(res: Response): Promise<string> {
   return res.statusText || `Request failed (${res.status})`
 }
 
+function isLikelyNetworkFailure(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  if (error.name === "AbortError") return false
+  const msg = error.message.toLowerCase()
+  return (
+    error.name === "TypeError" ||
+    error.name === "NetworkError" ||
+    /failed to fetch|networkerror|load failed|network request failed/.test(msg)
+  )
+}
+
+function userFacingNetworkError(error: unknown): Error {
+  if (!isLikelyNetworkFailure(error)) {
+    return error instanceof Error
+      ? error
+      : new Error("Something went wrong. Please try again.")
+  }
+
+  const offline = typeof navigator !== "undefined" && navigator.onLine === false
+  const message = offline
+    ? "You’re offline. Check your connection and try again."
+    : "We couldn’t reach the server. Please try again in a moment."
+
+  return new Error(message, { cause: error })
+}
+
 export async function holidazeFetch<T>(
   path: string,
   options: RequestInit & {
@@ -76,7 +102,12 @@ export async function holidazeFetch<T>(
   if (bearer) headers.set("Authorization", `Bearer ${bearer}`)
   if (noroffApiKey) headers.set("X-Noroff-API-Key", noroffApiKey)
 
-  const res = await fetch(`${API_BASE_URL}${path}`, { ...rest, headers })
+  let res: Response
+  try {
+    res = await fetch(`${API_BASE_URL}${path}`, { ...rest, headers })
+  } catch (error) {
+    throw userFacingNetworkError(error)
+  }
 
   if (res.status === 401 && bearer && endSessionOn401) {
     unauthorizedHandler?.()
