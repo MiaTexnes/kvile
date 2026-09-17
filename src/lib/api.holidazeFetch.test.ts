@@ -93,4 +93,26 @@ describe("holidazeFetch", () => {
       holidazeFetch("/holidaze/bookings", { method: "POST" }),
     ).rejects.toThrow("Invalid dateFrom; Guests required")
   })
+  it("maps Failed to fetch to a friendly message", async () => {
+    const { holidazeFetch } = await loadApi()
+    vi.mocked(globalThis.fetch).mockRejectedValue(
+      new TypeError("Failed to fetch"),
+    )
+
+    await expect(holidazeFetch("/holidaze/venues")).rejects.toThrow(
+      /couldn’t reach the server/i,
+    )
+  })
+
+  it("maps network errors to an offline message when navigator is offline", async () => {
+    const { holidazeFetch } = await loadApi()
+    vi.stubGlobal("navigator", { ...navigator, onLine: false })
+    vi.mocked(globalThis.fetch).mockRejectedValue(
+      new TypeError("Failed to fetch"),
+    )
+
+    await expect(holidazeFetch("/holidaze/venues")).rejects.toThrow(
+      /you’re offline/i,
+    )
+  })
 })

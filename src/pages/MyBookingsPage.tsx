@@ -7,6 +7,7 @@ import * as api from "../lib/api"
 import { splitProfileBookings } from "../lib/profileBookings"
 import type { Booking } from "../lib/types"
 import { useDocumentTitle } from "../lib/useDocumentTitle"
+import { formatPrice } from "../lib/formatPrice"
 
 function BookingTripCard({ booking: b }: { booking: Booking }) {
   const venueId = b.venue?.id
@@ -30,7 +31,7 @@ function BookingTripCard({ booking: b }: { booking: Booking }) {
       <div className="px-2 text-center">
         {price != null ? (
           <p className="text-lg font-semibold tabular-nums text-brand-950">
-            {price}
+            {formatPrice(price)}
             <span className="text-sm font-medium text-brand-800/80">
               {" "}
               / night
@@ -59,7 +60,7 @@ function BookingTripCard({ booking: b }: { booking: Booking }) {
   const ariaBits = [
     `View venue ${venueName}.`,
     `Check-in ${fromLabel}, check-out ${toLabel}, ${b.guests} guest(s).`,
-    price != null ? `${price} per night.` : null,
+    price != null ? `${formatPrice(price)} per night.` : null,
     ownerName ? `Hosted by ${ownerName}.` : null,
   ]
     .filter(Boolean)
