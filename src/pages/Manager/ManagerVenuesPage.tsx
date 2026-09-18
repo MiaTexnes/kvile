@@ -138,7 +138,6 @@ export function ManagerVenuesPage() {
     (location.state as { createdVenueId?: string } | null)?.createdVenueId ??
     undefined
 
-  // Which venue the confirm dialog targets
   const [pendingDelete, setPendingDelete] = useState<{
     id: string
     name: string
@@ -162,7 +161,6 @@ export function ManagerVenuesPage() {
   const isRefreshingAfterCreate =
     Boolean(createdVenueId) && q.isFetching && venues.length === 0
 
-  // DELETE venue after ConfirmDialog confirm
   const deleteMutation = useMutation({
     mutationFn: async ({ id }: { id: string }) => {
       if (!user) throw new Error("Not signed in")
@@ -179,7 +177,6 @@ export function ManagerVenuesPage() {
   useDocumentTitle("Host dashboard")
   if (!user?.venueManager) return null
 
-  // Allow success banner through while the list refetches after create
   if (q.isPending && !createdVenueId) {
     return (
       <p role="status" aria-live="polite" className="text-brand-800">

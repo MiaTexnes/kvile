@@ -2,7 +2,7 @@
 
 Front end for Noroff Project Exam 2. It is a holiday booking site on the Holidaze API: guests browse venues, search, check a calendar, and book. Venue managers can create and edit listings and see who booked them.
 
-Live demo: [kvile.netlify.app](https://kvile.netlify.app)  
+Live demo: [kvile.netlify.app](https://kvile.netlify.app)
 Repo: [github.com/MiaTexnes/kvile](https://github.com/MiaTexnes/kvile)
 
 There is no custom backend. All data comes from `https://v2.api.noroff.dev`.
@@ -11,13 +11,16 @@ I named the product Kvile (Norwegian for rest / quiet) instead of Holidaze. Crea
 
 ## Stack
 
-- React 19, TypeScript, Vite
-- Tailwind CSS v4
-- React Router
-- TanStack Query, React Hook Form, Zod
-- react-day-picker for the availability calendar
+- React 19, TypeScript, Vite — this is the course default. Vite is just the fastest way to run a React SPA.
+- Tailwind v4 — utility classes, tokens live in `src/index.css`
+- React Router — URLs like `/venues/:id` without a full reload
+- TanStack Query — venues and bookings come from the API. I didn’t want a pile of `useEffect` fetches.
+- React Hook Form + Zod — login, register, booking, host form
+- react-day-picker + date-fns — calendar on the venue page
+- Vitest — tests for the date / filter / API helpers
+- Netlify — static host, SPA fallback
 
-Hosted on Netlify.
+Not using Next.js, Redux, or Bootstrap. Don’t need a server, and Redux is overkill when Query already holds server state.
 
 ## Setup
 
@@ -61,7 +64,7 @@ These are the things that usually go wrong.
 
 **API key.** Noroff v2 wants both `Authorization: Bearer <token>` and `X-Noroff-API-Key`. One key per app, from `POST /auth/create-api-key` (see [.env.example](.env.example) and the [API key docs](https://docs.noroff.dev/docs/v2/auth/api-key)). Without the key header you often get 401 even after a valid login. The live site has this set in Netlify.
 
-**Session.** Token, name, email, and the venue-manager flag sit in `sessionStorage`. Closing the tab logs you out. On load the app re-fetches the Holidaze profile so `venueManager` stays in sync with the API.
+**Session.** Token, name, email, and the venue-manager flag sit in `sessionStorage`. Closing the tab logs you out. On load the app re-fetches the Holidaze profile so `venueManager` stays in sync with the API. Hearts (saved venues) are in `localStorage`, so those stick if you open a new tab.
 
 **Register.** `POST /auth/register` does not return a token. After a successful sign-up the app logs you in automatically. Tick “Register as venue manager” for host tools; leave it off for a customer.
 
@@ -126,7 +129,7 @@ Use the [hosted site](https://kvile.netlify.app) if you can, so you are on the s
 
 ## Where things live
 
-- `src/lib/api.ts` — fetch wrapper and Holidaze endpoints
+- `src/lib/api/` — fetch wrapper and Holidaze endpoints (auth, venues, bookings, profiles)
 - `src/lib/availability.ts` — which calendar days are taken
 - `src/lib/managerVenueBooking.ts` — host hold / block rows
 - `src/lib/filterVenues.ts` — catalogue filters
@@ -141,4 +144,4 @@ Use the [hosted site](https://kvile.netlify.app) if you can, so you are on the s
 - API: https://docs.noroff.dev/docs/v2/holidaze/venues
 - Swagger: https://v2.api.noroff.dev/docs/static/index.html
 
-Kanban, Gantt, and Figma are in the Moodle hand-in.
+Kanban, Gantt, and Figma are in the Moodle hand-in. URLs are also in [DELIVERY-LINKS.md](./DELIVERY-LINKS.md).

@@ -27,7 +27,12 @@ export function LoginPage() {
       await login(values.email, values.password)
       navigate(from, { replace: true })
     } catch (e) {
-      form.setError("root", { message: (e as Error).message })
+      const raw = (e as Error).message
+      form.setError("root", {
+        message: /invalid|401|unauthorized/i.test(raw)
+          ? "Wrong email or password"
+          : raw,
+      })
     }
   }
 

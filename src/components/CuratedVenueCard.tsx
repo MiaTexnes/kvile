@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import type { Venue } from "../lib/types"
-import { hostProfileHref } from "../lib/hostProfilePath"
+import { hostProfileHref } from "../lib/types"
 import { IconHeart } from "./Icons"
 import { formatPrice } from "../lib/formatPrice"
 

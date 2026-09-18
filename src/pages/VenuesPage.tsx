@@ -100,8 +100,7 @@ export function VenuesPage() {
                   aria-describedby="venues-search-hint"
                 />
                 <span id="venues-search-hint" className="sr-only">
-                  Combine place or keywords with guest count and the word pets
-                  for pet-friendly stays.
+                  Search by place, guests, or pets.
                 </span>
               </div>
               <button

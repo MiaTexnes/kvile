@@ -19,7 +19,7 @@ import {
 import { useMobileHomeSearchChrome } from "../components/mobileHomeSearchChrome"
 import { VenueCatalogFilterPills } from "../components/VenueCatalogFilterPills"
 import { VenueCatalogSortSelect } from "../components/VenueCatalogSortSelect"
-import { hostProfileHref } from "../lib/hostProfilePath"
+import { hostProfileHref } from "../lib/types"
 import { useDocumentTitle } from "../lib/useDocumentTitle"
 import type { Venue } from "../lib/types"
 import { useVenueCatalog } from "../lib/useVenueCatalog"
@@ -62,8 +62,7 @@ function MobileHomeSearchFormInHeader({
           aria-describedby={hintId}
         />
         <span id={hintId} className="sr-only">
-          Add a place or keywords, a guest count, and pets if you need
-          pet-friendly stays. Submit to update the list below.
+          Search by place, guest count, or pets.
         </span>
         <button
           type="submit"
@@ -358,9 +357,8 @@ export function HomePage() {
                     aria-describedby="hero-search-hint"
                   />
                   <span id="hero-search-hint" className="sr-only">
-                    Combine place or keywords with guest count and the word pets
-                    to filter pet-friendly stays. Dates are chosen when you open
-                    a venue.
+                    Search by place, guests, or pets. Pick dates on the venue
+                    page.
                   </span>
                 </div>
               </div>
@@ -506,9 +504,9 @@ export function HomePage() {
           data-mobile-venues
           className="mt-12 scroll-mt-32 space-y-6 bg-surface-sheet px-6 py-8"
         >
-          <h3 className="text-xl font-bold tracking-tight text-mobile-ink">
+          <h2 className="text-xl font-bold tracking-tight text-mobile-ink">
             {navViewSaved ? "Saved stays" : "Recommended stays"}
-          </h3>
+          </h2>
           {!navViewSaved ? (
             <div className="space-y-3">
               <VenueCatalogFilterPills
