@@ -3,6 +3,9 @@ import { Route, Routes } from "react-router-dom"
 import { Layout } from "./components/Layout"
 import { HomePage } from "./pages/HomePage"
 import { VenuesPage } from "./pages/VenuesPage"
+import { ProtectedRoute } from "./components/ProtectedRoute"
+import { ManagerRoute } from "./components/ManagerRoute"
+import { NotFoundPage } from "./pages/NotFoundPage"
 
 const LoginPage = lazy(() =>
   import("./pages/LoginPage").then((m) => ({ default: m.LoginPage })),
@@ -16,22 +19,6 @@ const MyBookingsPage = lazy(() =>
 
 const ProfilePage = lazy(() =>
   import("./pages/ProfilePage").then((m) => ({ default: m.ProfilePage })),
-)
-
-const NotFoundPage = lazy(() =>
-  import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })),
-)
-
-const ProtectedRoute = lazy(() =>
-  import("./components/ProtectedRoute").then((m) => ({
-    default: m.ProtectedRoute,
-  })),
-)
-
-const ManagerRoute = lazy(() =>
-  import("./components/ManagerRoute").then((m) => ({
-    default: m.ManagerRoute,
-  })),
 )
 
 const VenueDetailPage = lazy(() =>
@@ -106,34 +93,20 @@ export default function App() {
           <Route path="contact" element={<ContactPage />} />
           <Route path="privacy" element={<PrivacyPolicyPage />} />
           <Route path="terms" element={<TermsOfServicePage />} />
-          <Route
-            element={
-              <Suspense fallback={routeFallback}>
-                <ProtectedRoute />
-              </Suspense>
-            }
-          >
+          <Route element={<ProtectedRoute />}>
             <Route path="my-bookings" element={<MyBookingsPage />} />
             <Route path="profile" element={<ProfilePage />} />
           </Route>
-          <Route
-            element={
-              <Suspense fallback={routeFallback}>
-                <ManagerRoute />
-              </Suspense>
-            }
-          >
+          <Route element={<ManagerRoute />}>
             <Route path="manager/venues" element={<ManagerVenuesPage />} />
             <Route
               path="manager/venues/new"
               element={<ManagerVenueFormPage mode="create" />}
             />
-            {/* Host sees who booked this venue */}
             <Route
               path="manager/venues/:id/bookings"
               element={<ManagerVenueBookingsPage />}
             />
-            {/* Host edits an existing venue */}
             <Route
               path="manager/venues/:id/edit"
               element={<ManagerVenueFormPage mode="edit" />}

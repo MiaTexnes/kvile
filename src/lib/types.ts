@@ -102,3 +102,6 @@ export interface RegisterRequestBody {
   banner?: MediaItem
   venueManager: boolean
 }
+export function hostProfileHref(profileName: string): string {
+  return `/hosts/${encodeURIComponent(profileName.trim())}`
+}

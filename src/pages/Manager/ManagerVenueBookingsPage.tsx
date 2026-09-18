@@ -29,7 +29,7 @@ import {
   isUnavailableBookedNight,
   rangeOverlapsBooking,
 } from "../../lib/availability"
-import { hostProfileHref } from "../../lib/hostProfilePath"
+import { hostProfileHref } from "../../lib/types"
 import { isManagersOwnBookingBlock } from "../../lib/managerVenueBooking"
 import { useDocumentTitle } from "../../lib/useDocumentTitle"
 import { isCurrentUserVenueOwner } from "../../lib/managerOwnership"
@@ -260,7 +260,6 @@ export function ManagerVenueBookingsPage() {
 
   return (
     <div className="space-y-10">
-      {/* venue header — Task 38 */}
       <div className="shadow-elevate overflow-hidden rounded-2xl border border-stone-200/90 bg-white">
         <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center">
           <div className="aspect-video w-full shrink-0 overflow-hidden rounded-xl bg-brand-100 sm:aspect-square sm:h-28 sm:w-28 sm:max-w-[7rem]">
@@ -289,7 +288,6 @@ export function ManagerVenueBookingsPage() {
         </div>
       </div>
 
-      {/* Block dates section — Task 39 */}
       <section
         aria-labelledby="block-dates-heading"
         className="shadow-elevate space-y-5 rounded-2xl border border-stone-200/90 bg-white p-5 sm:p-6"
@@ -421,7 +419,6 @@ export function ManagerVenueBookingsPage() {
         </div>
       </section>
 
-      {/* booking list with isOwnHold / Remove block — Task 39 */}
       {deleteBookingMutation.error ? (
         <Alert tone="error">
           {(deleteBookingMutation.error as Error).message}
@@ -435,7 +432,6 @@ export function ManagerVenueBookingsPage() {
           {sortedBookings.map((b) => {
             const avatarUrl = b.customer?.avatar?.url
             const custName = b.customer?.name ?? "Guest"
-            // Hold = this manager's own booking, not a paying guest
             const isOwnHold = managerEmailsForHolds.some((em) =>
               isManagersOwnBookingBlock(b, em),
             )

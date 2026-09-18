@@ -1,7 +1,6 @@
 import { parseISO, startOfToday } from "date-fns"
 import type { Booking } from "./types"
 
-// Same rule as Task 29: check-in today or later, local calendar day
 export function isUpcomingBooking(
   b: Pick<Booking, "dateFrom">,
   today = startOfToday(),

@@ -81,7 +81,6 @@ const defaults: Form = {
   country: "",
 }
 
-// create + edit + delete — same form
 export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
   const { id } = useParams<{ id: string }>()
   useDocumentTitle(mode === "edit" ? "Edit venue" : "New venue")
@@ -89,10 +88,8 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  // Edit-only delete confirm
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
-  // GET venue for edit prefill
   const venueQuery = useQuery({
     queryKey: ["venue", id, "edit"],
     queryFn: () => api.fetchVenue(id!, { owner: true }),
@@ -122,7 +119,6 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
   const form = useForm<Form>({
     resolver: zodResolver(schema) as Resolver<Form>,
     defaultValues: defaults,
-    // RHF `values` keeps the form in sync once the venue loads
     ...(editFormValues ? { values: editFormValues } : {}),
   })
   const { errors } = form.formState
@@ -132,7 +128,6 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
       if (!user) throw new Error("Not signed in")
       const body = buildVenueUpsertBody(values)
       if (mode === "create") return api.createVenue(user.accessToken, body)
-      // PUT existing venue
       return api.updateVenue(user.accessToken, id!, body)
     },
     onSuccess: async (v) => {
@@ -150,7 +145,6 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
     onError: (e: Error) => form.setError("root", { message: e.message }),
   })
 
-  // DELETE then back to dashboard
   const deleteMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not signed in")
@@ -474,7 +468,6 @@ export function ManagerVenueFormPage({ mode }: { mode: "create" | "edit" }) {
             {saveMutation.isPending ? "Saving..." : "Save venue"}
           </button>
 
-          {/* Edit-only delete opens ConfirmDialog */}
           {mode === "edit" ? (
             <button
               type="button"
