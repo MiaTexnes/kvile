@@ -5,6 +5,7 @@ import clsx from "clsx"
 import { useAuth } from "../context/AuthContext"
 import * as api from "../lib/api"
 import { IconUser, IconHeart } from "./Icons"
+import { HeaderSearch } from "./HeaderSearch"
 import { KvileLogo } from "./KvileLogo"
 
 type Variant = "overlay" | "solid"
@@ -38,7 +39,7 @@ export function SiteHeader({
     <header
       className={clsx(
         className,
-        "border-b border-white/40 bg-mobile-surface/75 shadow-[0_1px_0_rgb(0_0_0/0.04)] backdrop-blur-xl",
+        "border-b relative border-white/40 bg-mobile-surface/75 shadow-[0_1px_0_rgb(0_0_0/0.04)] backdrop-blur-xl",
         isOverlay ? "fixed inset-x-0 top-0 z-50" : "sticky top-0 z-50",
       )}
     >
@@ -103,6 +104,7 @@ export function SiteHeader({
         </nav>
 
         <div className="flex shrink-0 items-center justify-end gap-3 justify-self-end">
+          <HeaderSearch compact={false} />
           <NavLink
             to="/venues?view=saved"
             title="Saved stays"
