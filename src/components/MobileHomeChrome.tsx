@@ -2,7 +2,8 @@ import clsx from "clsx"
 import { useEffect, useId, useRef, useState } from "react"
 import { Link, NavLink, useLocation } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
-import { IconClose, IconLogOut, IconMenu, IconSearch, IconUser } from "./Icons"
+import { IconClose, IconLogOut, IconMenu, IconUser } from "./Icons"
+import { HeaderSearch } from "./HeaderSearch"
 import { KvileLogo } from "./KvileLogo"
 import { useMobileHomeSearchChrome } from "./mobileHomeSearchChrome"
 import { useQuery } from "@tanstack/react-query"
@@ -246,46 +247,14 @@ function MobileNavDialog({ dialogRef }: MobileNavDialogProps) {
 function MobileTopBar({
   menuOpen,
   onToggleRequest,
-  searchExpanded,
-  onSearchExpandedChange,
 }: {
   menuOpen: boolean
   onToggleRequest: () => void
-  searchExpanded: boolean
-  onSearchExpandedChange: (expanded: boolean) => void
 }) {
   const { user } = useAuth()
-  const { pathname } = useLocation()
-  const showHomeSearch = pathname === "/"
-  const searchPanelId = "kvile-mobile-home-search-panel"
-
-  useEffect(() => {
-    if (!showHomeSearch) {
-      onSearchExpandedChange(false)
-    }
-  }, [showHomeSearch, onSearchExpandedChange])
-
-  useEffect(() => {
-    if (!searchExpanded) return
-    const frame = window.requestAnimationFrame(() => {
-      document.getElementById("hero-search-mobile-header")?.focus()
-    })
-    return () => window.cancelAnimationFrame(frame)
-  }, [searchExpanded])
-
-  useEffect(() => {
-    if (!searchExpanded) return
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        onSearchExpandedChange(false)
-      }
-    }
-    document.addEventListener("keydown", onKeyDown)
-    return () => document.removeEventListener("keydown", onKeyDown)
-  }, [searchExpanded, onSearchExpandedChange])
 
   return (
-    <header className="fixed top-0 z-[65] w-full overflow-x-clip border-b border-stone-200/60 pt-[env(safe-area-inset-top)] bg-mobile-surface/80 backdrop-blur-xl supports-[backdrop-filter]:bg-mobile-surface/72">
+    <header className="relative fixed top-0 z-[65] w-full border-b border-stone-200/60 pt-[env(safe-area-inset-top)] bg-mobile-surface/80 backdrop-blur-xl supports-[backdrop-filter]:bg-mobile-surface/72">
       <div className="relative flex h-11 w-full items-center justify-between gap-2 px-3">
         <Link
           to="/"
@@ -294,24 +263,8 @@ function MobileTopBar({
           <KvileLogo className="max-w-full" />
         </Link>
         <span className="min-w-0 flex-1 shrink" aria-hidden="true" />
-        <div className="relative z-[12] flex shrink-0 items-center gap-0.5">
-          {showHomeSearch ? (
-            <button
-              type="button"
-              onClick={() => onSearchExpandedChange(!searchExpanded)}
-              className={clsx(
-                "flex size-9 items-center justify-center rounded-full transition hover:bg-black/[0.06]",
-                searchExpanded
-                  ? "bg-mobile-primary/10 text-mobile-primary"
-                  : "text-on-surface-muted",
-              )}
-              aria-expanded={searchExpanded}
-              aria-controls={searchPanelId}
-              aria-label="Search venues"
-            >
-              <IconSearch className="size-[22px]" />
-            </button>
-          ) : null}
+        <div className="flex shrink-0 items-center gap-0.5">
+          <HeaderSearch compact />
           <button
             type="button"
             onClick={onToggleRequest}
@@ -358,22 +311,6 @@ function MobileTopBar({
           </Link>
         </div>
       </div>
-      {showHomeSearch && searchExpanded ? (
-        <div
-          id={searchPanelId}
-          className="flex items-center gap-2 border-t border-stone-200/50 px-3 py-2"
-        >
-          <div id="kvile-mobile-home-search-mount" className="min-w-0 flex-1" />
-          <button
-            type="button"
-            onClick={() => onSearchExpandedChange(false)}
-            className="flex size-9 shrink-0 items-center justify-center rounded-full text-on-surface-muted transition hover:bg-black/[0.06]"
-            aria-label="Close search"
-          >
-            <IconClose className="size-[22px]" />
-          </button>
-        </div>
-      ) : null}
     </header>
   )
 }
@@ -387,7 +324,7 @@ export function MobileShell() {
       "MobileShell must be rendered inside MobileHomeSearchChromeContext.Provider (see Layout.tsx).",
     )
   }
-  const { searchExpanded, setSearchExpanded } = mobileSearchChrome
+ const { setSearchExpanded } = mobileSearchChrome
 
   const { pathname, search } = useLocation()
   const routeKey = `${pathname}${search}`
@@ -422,12 +359,7 @@ export function MobileShell() {
 
   return (
     <>
-      <MobileTopBar
-        menuOpen={menuOpen}
-        onToggleRequest={toggleMenu}
-        searchExpanded={searchExpanded}
-        onSearchExpandedChange={setSearchExpanded}
-      />
+      <MobileTopBar menuOpen={menuOpen} onToggleRequest={toggleMenu} />
       <MobileNavDialog dialogRef={dialogRef} />
     </>
   )
