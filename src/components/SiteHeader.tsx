@@ -38,9 +38,8 @@ export function SiteHeader({
     <header
       className={clsx(
         className,
-        isOverlay
-          ? "fixed inset-x-0 top-0 z-50 border-b border-white/40 bg-mobile-surface/75 shadow-[0_1px_0_rgb(0_0_0/0.04)] backdrop-blur-xl"
-          : "sticky top-0 z-50 border-b border-stone-200/70 bg-gradient-to-b from-brand-50/50 to-cream/95 shadow-sm shadow-stone-900/5 backdrop-blur-md",
+        "border-b border-white/40 bg-mobile-surface/75 shadow-[0_1px_0_rgb(0_0_0/0.04)] backdrop-blur-xl",
+        isOverlay ? "fixed inset-x-0 top-0 z-50" : "sticky top-0 z-50",
       )}
     >
       <div
