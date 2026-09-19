@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import clsx from "clsx"
 import { useAuth } from "../context/AuthContext"
 import * as api from "../lib/api"
-import { IconUser } from "./Icons"
+import { IconUser, IconHeart } from "./Icons"
 import { KvileLogo } from "./KvileLogo"
 
 type Variant = "overlay" | "solid"
@@ -45,19 +45,19 @@ export function SiteHeader({
     >
       <div
         className={clsx(
-          "font-manrope mx-auto flex max-w-screen-2xl flex-nowrap items-center justify-between gap-6 px-10 py-2 tracking-tight",
+          "font-manrope mx-auto grid w-full max-w-screen-2xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-6 py-2 tracking-tight",
         )}
       >
         <Link
           to="/"
-          className="relative z-10 flex shrink-0 items-center overflow-visible outline-none transition-opacity hover:opacity-90"
+          className="relative z-10 flex min-w-[7rem] shrink-0 items-center overflow-visible outline-none transition-opacity hover:opacity-90"
         >
           <KvileLogo />
         </Link>
 
         <nav
           aria-label="Primary"
-          className="flex items-center justify-center gap-8"
+          className="flex shrink-0 items-center justify-center gap-4"
         >
           <NavLink
             to="/"
@@ -75,10 +75,10 @@ export function SiteHeader({
           </NavLink>
           <NavLink
             to="/venues"
-            className={({ isActive }) =>
+            className={() =>
               clsx(
                 "inline-block pb-1 text-sm font-semibold transition-all",
-                isActive
+                pathname === "/venues" && !viewSaved
                   ? "border-b-2 border-mobile-primary text-mobile-primary"
                   : "border-b-2 border-transparent text-stone-600 hover:text-holidaze-blue",
               )
@@ -86,6 +86,7 @@ export function SiteHeader({
           >
             All Venues
           </NavLink>
+
           <Link
             to={{ pathname: "/", hash: "about" }}
             className={navInactive}
@@ -102,7 +103,22 @@ export function SiteHeader({
           </Link>
         </nav>
 
-        <div className="flex min-w-0 shrink-0 items-center gap-4">
+        <div className="flex shrink-0 items-center justify-end gap-3 justify-self-end">
+          <NavLink
+            to="/venues?view=saved"
+            title="Saved stays"
+            aria-label="Saved stays"
+            className={() =>
+              clsx(
+                "flex size-9 items-center justify-center rounded-full transition",
+                viewSaved
+                  ? "bg-mobile-primary/10 text-red-500"
+                  : "text-stone-600 hover:bg-stone-100 hover:text-holidaze-blue",
+              )
+            }
+          >
+            <IconHeart filled={viewSaved} className="size-5" />
+          </NavLink>
           {user ? (
             <>
               <NavLink

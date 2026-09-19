@@ -15,7 +15,7 @@ import {
   isUnavailableBookedNight,
   rangeOverlapsBooking,
 } from "../lib/availability"
-import { hostProfileHref } from "../lib/hostProfilePath"
+import { hostProfileHref } from "../lib/types"
 import type { Booking, Venue } from "../lib/types"
 import { useDocumentTitle } from "../lib/useDocumentTitle"
 import { formatPrice } from "../lib/formatPrice"
@@ -82,7 +82,7 @@ function VenueDetailBody({ venue }: { venue: Venue }) {
       })
     },
     onSuccess: () => {
-      setBookingMessage("Booking confirmed!")
+      setBookingMessage("Booking confirmed. See it under My bookings.")
       setRange(undefined)
       setDateWarning(null)
       queryClient.invalidateQueries({ queryKey: ["venue", venue.id] })

@@ -45,7 +45,7 @@ function SiteFooter({ className }: { className?: string }) {
       </div>
       <div className="relative z-10 mx-auto flex min-w-0 w-full max-w-screen-2xl flex-col items-center gap-6 px-4 md:flex-row md:items-center md:justify-between md:px-12">
         <p className="text-center md:text-left">
-          © {new Date().getFullYear()} Kvile. Your Digital Sanctuary.
+          © {new Date().getFullYear()} Kvile.
         </p>
         <nav className="flex flex-wrap justify-center gap-x-8 gap-y-2 md:flex-nowrap md:justify-end">
           <NavLink to="/privacy" className={footerLinkClass}>

@@ -226,7 +226,18 @@ function MobileNavDialog({ dialogRef }: MobileNavDialogProps) {
               Log out
             </button>
           </div>
-        ) : null}
+        ) : (
+          <div className="border-t border-stone-100 bg-mobile-surface/70 px-3 pt-6 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <Link
+              to="/login"
+              onClick={closeSheet}
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-stone-200/90 bg-white text-[15px] font-semibold text-brand-950 transition hover:bg-stone-50"
+            >
+              <IconUser className="size-5 shrink-0" />
+              Log in
+            </Link>
+          </div>
+        )}
       </div>
     </dialog>
   )
@@ -274,7 +285,7 @@ function MobileTopBar({
   }, [searchExpanded, onSearchExpandedChange])
 
   return (
-    <header className="fixed top-0 z-[65] w-full overflow-x-clip border-b border-stone-200/60 pt-[env(safe-area-inset-top)] bg-mobile-surface/80 backdrop-blur-xl supports-[backdrop-filter]:bg-mobile-surface/72 lg:hidden">
+    <header className="fixed top-0 z-[65] w-full overflow-x-clip border-b border-stone-200/60 pt-[env(safe-area-inset-top)] bg-mobile-surface/80 backdrop-blur-xl supports-[backdrop-filter]:bg-mobile-surface/72">
       <div className="relative flex h-11 w-full items-center justify-between gap-2 px-3">
         <Link
           to="/"
