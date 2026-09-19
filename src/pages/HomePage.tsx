@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useState,
-  type FormEvent,
-} from "react"
-import { createPortal } from "react-dom"
+import { useCallback, useEffect, useState, type FormEvent } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { Alert } from "../components/Alert"
 import { CuratedVenueCard } from "../components/CuratedVenueCard"
@@ -24,57 +17,6 @@ import { useDocumentTitle } from "../lib/useDocumentTitle"
 import type { Venue } from "../lib/types"
 import { useVenueCatalog } from "../lib/useVenueCatalog"
 import { formatPrice } from "../lib/formatPrice"
-
-function MobileHomeSearchFormInHeader({
-  heroSearchInput,
-  onHeroSearch,
-  onHeroSearchInputChange,
-}: {
-  heroSearchInput: string
-  onHeroSearch: (e: FormEvent) => void
-  onHeroSearchInputChange: (value: string) => void
-}) {
-  const searchFieldId = "hero-search-mobile-header"
-  const hintId = `${searchFieldId}-hint`
-
-  return (
-    <div className="relative isolate w-full min-w-0 group">
-      <div className="pointer-events-none absolute inset-0 rounded-full bg-mobile-primary/5 opacity-0 blur-xl transition-opacity group-focus-within:opacity-100" />
-      <form
-        onSubmit={onHeroSearch}
-        className="relative flex w-full min-w-0 min-h-8 items-center gap-1.5 rounded-full border border-white/55 bg-mobile-surface/92 px-2 py-1 shadow-sm shadow-stone-900/8 ring-1 ring-stone-900/6 backdrop-blur-xl transition-colors"
-        role="search"
-      >
-        <IconSearch
-          className="size-4 shrink-0 text-mobile-primary"
-          aria-hidden
-        />
-        <label htmlFor={searchFieldId} className="sr-only">
-          Search venues
-        </label>
-        <input
-          id={searchFieldId}
-          type="search"
-          value={heroSearchInput}
-          onChange={(e) => onHeroSearchInputChange(e.target.value)}
-          placeholder="Place, guests, pets..."
-          className="min-w-0 flex-1 border-none bg-transparent py-0.5 text-[13px] font-medium leading-tight text-mobile-ink outline-none ring-0 placeholder:text-on-surface-muted/65 focus:ring-0"
-          aria-describedby={hintId}
-        />
-        <span id={hintId} className="sr-only">
-          Search by place, guest count, or pets.
-        </span>
-        <button
-          type="submit"
-          className="flex size-7 shrink-0 items-center justify-center rounded-full bg-mobile-primary text-white transition-transform active:scale-95"
-          aria-label="Search"
-        >
-          <IconSearch className="size-[15px] text-white" aria-hidden />
-        </button>
-      </form>
-    </div>
-  )
-}
 
 function MobileFeaturedVenue({
   venue,
@@ -238,9 +180,6 @@ export function HomePage() {
   }
 
   const mobileSearchChrome = useMobileHomeSearchChrome()
-  const searchExpanded = mobileSearchChrome?.searchExpanded ?? false
-  const [mobileSearchMountEl, setMobileSearchMountEl] =
-    useState<HTMLElement | null>(null)
 
   const scrollToVenues = useCallback(() => {
     const run = () => {
@@ -253,23 +192,6 @@ export function HomePage() {
     }
     window.requestAnimationFrame(run)
   }, [])
-
-  useLayoutEffect(() => {
-    if (!searchExpanded) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- clear portal host when search collapses
-      setMobileSearchMountEl(null)
-      return
-    }
-    const syncMount = () => {
-      setMobileSearchMountEl(
-        document.getElementById("kvile-mobile-home-search-mount"),
-      )
-    }
-    // Mobile search portals into `#kvile-mobile-home-search-mount` when the header panel opens.
-    syncMount()
-    const frame = window.requestAnimationFrame(syncMount)
-    return () => window.cancelAnimationFrame(frame)
-  }, [searchExpanded])
 
   useEffect(() => {
     if (location.pathname !== "/" || location.hash !== "#about") return
@@ -297,19 +219,9 @@ export function HomePage() {
     })
   }
 
-  return (
-    <>
-      {mobileSearchMountEl
-        ? createPortal(
-            <MobileHomeSearchFormInHeader
-              heroSearchInput={heroSearchInput}
-              onHeroSearch={onHeroSearch}
-              onHeroSearchInputChange={setHeroSearchInput}
-            />,
-            mobileSearchMountEl,
-          )
-        : null}
-      <div className="hidden bg-mobile-surface font-manrope text-mobile-ink nav:block">
+ return (
+  <>
+    <div className="hidden bg-mobile-surface font-manrope text-mobile-ink nav:block">
         <section className="relative flex h-[min(921px,100svh)] w-full flex-col items-center justify-center pt-24">
           <div className="absolute inset-0 z-0 overflow-hidden">
             <img
