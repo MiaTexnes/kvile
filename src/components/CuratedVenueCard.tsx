@@ -20,7 +20,7 @@ export function CuratedVenueCard({
   const rating = venue.rating ?? null
 
   return (
-    <article className="group overflow-hidden rounded-3xl border border-stone-200/80 bg-white shadow-card shadow-card-hover">
+    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-stone-200/80 bg-white shadow-card shadow-card-hover">
       <div className="relative h-64 overflow-hidden md:h-64">
         <Link
           to={`/venues/${venue.id}`}
@@ -53,7 +53,7 @@ export function CuratedVenueCard({
           />
         </button>
       </div>
-      <div className="p-6">
+      <div className="flex flex-1 flex-col p-6">
         <div className="mb-2 flex items-center justify-between gap-2">
           <Link
             to={`/venues/${venue.id}`}
@@ -89,7 +89,7 @@ export function CuratedVenueCard({
             ) : null}
           </div>
         ) : null}
-        <div className="mt-5 flex flex-wrap items-end justify-between gap-3 border-t border-stone-100 pt-5">
+        <div className="mt-auto flex flex-wrap items-end justify-between gap-3 border-t border-stone-100 pt-5">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-muted">
               From
