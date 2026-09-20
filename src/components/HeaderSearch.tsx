@@ -52,30 +52,27 @@ export function HeaderSearch({ compact }: { compact: boolean }) {
     })
     return () => window.cancelAnimationFrame(frame)
   }, [searchExpanded, searchFieldId])
-
-
-useEffect(() => {
-  if (!searchExpanded) return
-  function onKeyDown(e: KeyboardEvent) {
-    if (e.key === "Escape") setSearchExpanded(false)
-  }
-  document.addEventListener("keydown", onKeyDown)
-  return () => document.removeEventListener("keydown", onKeyDown)
-}, [searchExpanded, setSearchExpanded])
-
-useEffect(() => {
-  if (!searchExpanded) return
-  function onPointerDown(e: PointerEvent) {
-    const t = e.target
-    if (t instanceof Element && t.closest("[data-kvile-header-search]")) {
-      return
+  useEffect(() => {
+    if (!searchExpanded) return
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setSearchExpanded(false)
     }
-    setSearchExpanded(false)
-  }
-  document.addEventListener("pointerdown", onPointerDown)
-  return () => document.removeEventListener("pointerdown", onPointerDown)
-}, [searchExpanded, setSearchExpanded])
+    document.addEventListener("keydown", onKeyDown)
+    return () => document.removeEventListener("keydown", onKeyDown)
+  }, [searchExpanded, setSearchExpanded])
 
+  useEffect(() => {
+    if (!searchExpanded) return
+    function onPointerDown(e: PointerEvent) {
+      const t = e.target
+      if (t instanceof Element && t.closest("[data-kvile-header-search]")) {
+        return
+      }
+      setSearchExpanded(false)
+    }
+    document.addEventListener("pointerdown", onPointerDown)
+    return () => document.removeEventListener("pointerdown", onPointerDown)
+  }, [searchExpanded, setSearchExpanded])
 
   function onSubmit(e: FormEvent) {
     e.preventDefault()
